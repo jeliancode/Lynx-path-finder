@@ -1,5 +1,49 @@
 # LYNX - PATH FINDER
 
+## Estructura del proyecto
+
+Se esta utilizando una arquitectura de 3 capas:
+
+```
+   src
+    ├── app.js
+    ├── application
+    │   └── services
+    │       ├── mapService.js
+    │       ├── obstacleService.js
+    │       ├── routeService.js
+    │       ├── userService.js
+    │       └── waypointService.js
+    ├── infrastructure
+    │   ├── prisma.js
+    │   └── repositories
+    │       ├── mapRepository.js
+    │       ├── obstacleRepository.js
+    │       ├── routeRepository.js
+    │       ├── userRepository.js
+    │       └── waypointRepository.js
+    ├── middlewares
+    ├── presentation
+    │   ├── controllers
+    │   │   ├── mapsController.js
+    │   │   ├── obstacleController.js
+    │   │   ├── routeController.js
+    │   │   ├── userController.js
+    │   │   └── waypointController.js
+    │   └── routes
+    │       ├── mapRoutes.js
+    │       ├── obstacleRoutes.js
+    │       ├── routeRoutes.js
+    │       ├── userRoutes.js
+    │       └── waypointRoutes.js
+    ├── server.js
+    ├── tests
+    └── utils
+```
+
+## Base de datos
+
+![alt text](documents/database_schema.png)
 
 ## Inicializar el proyecto
 
@@ -48,7 +92,7 @@ Generar tablas en el contenedor PostgreSQL:
 npx prisma migrate dev --name init_db
 ```
 
-Generar el Cliente (solo si hay errores al migar):
+Generar el Cliente:
 ```bash
 npx prisma generate
 ```
@@ -57,4 +101,3 @@ Inicializar prisma studio:
 ```bash
 npx prisma studio
 ```
-
