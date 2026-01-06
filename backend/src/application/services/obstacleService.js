@@ -1,4 +1,4 @@
-import * as obstacleRepository from '../repositories/obstacleRepository.js';
+import * as obstacleRepository from '../../infrastructure/repositories/obstacleRepository.js';
 
 const validateObstacleData = (data) => {
     if (data.size <= 0) {

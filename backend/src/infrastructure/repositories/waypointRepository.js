@@ -1,4 +1,4 @@
-import prisma from "../config/prisma.js";
+import prisma from '../prisma.js';
 
 export const createWaypoint = async (waypointData) => {
   return await prisma.waypoint.create({

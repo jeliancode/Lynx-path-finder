@@ -1,4 +1,4 @@
-import prisma from "../config/prisma.js";
+import prisma from '../prisma.js';
 
 export const createMap = async (mapData) => {
   return await prisma.map.create({

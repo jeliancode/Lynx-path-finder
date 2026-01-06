@@ -1,9 +1,9 @@
-import * as obstacleService from '../services/obstacleService.js';
+import * as obstacleService from '../../application/services/obstacleService.js';
 
 export const createObstacle = async (req, res) => {
     try {
-        const {x, y, size} = req.body;
-        const newObstacle = await obstacleService.createObstacle({ x, y, size });
+        const {x, y, size, mapId} = req.body;
+        const newObstacle = await obstacleService.createObstacle({ x, y, size, mapId });
         res.status(201).json({
             success: true,
             data: newObstacle

@@ -1,4 +1,4 @@
-import * as routeRepository from '../repositories/routeRepository.js';
+import * as routeRepository from '../../infrastructure/repositories/routeRepository.js';
 
 const validateRouteData = (data) => {
     if (data.mapId <= 0) {

@@ -1,4 +1,4 @@
-import * as waypointRepository from '../repositories/waypointRepository.js';
+import * as waypointRepository from '../../infrastructure/repositories/waypointRepository.js';
 
 const validateWaypointData = (data) => {
     if (data.mapId <= 0) {

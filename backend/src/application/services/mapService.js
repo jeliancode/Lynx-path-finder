@@ -1,4 +1,4 @@
-import * as mapRepository from '../repositories/mapRepository.js';
+import * as mapRepository from '../../infrastructure/repositories/mapRepository.js';
 
 const validateMapData = (data) => {
     if (!data.name || data.width <= 0 || data.height <= 0) {

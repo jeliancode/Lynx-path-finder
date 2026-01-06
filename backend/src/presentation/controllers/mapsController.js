@@ -1,4 +1,4 @@
-import * as mapService from '../services/mapService.js';
+import * as mapService from '../../application/services/mapService.js';
 
 export const createMap = async (req, res) => {
     try {

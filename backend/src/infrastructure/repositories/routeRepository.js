@@ -1,4 +1,4 @@
-import prisma from '../config/prisma.js';
+import prisma from '../prisma.js';
 
 export const createRoute = async (routeData) => {
   return await prisma.route.create({
@@ -9,6 +9,7 @@ export const createRoute = async (routeData) => {
         endX: routeData.endX,
         endY: routeData.endY,
         distance: routeData.distance,
+        path: routeData.path,
     },
   });
 };

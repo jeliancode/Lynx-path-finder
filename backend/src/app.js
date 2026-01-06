@@ -1,9 +1,9 @@
 import express from 'express';
-import userRoutes from './routes/userRoutes.js';
-import waypointRoutes from './routes/waypointRoutes.js';
-import routeRoutes from './routes/routeRoutes.js';
-import mapRoutes from './routes/mapRoutes.js';
-import obstacleRoutes from './routes/obstacleRoutes.js';
+import userRoutes from './presentation/routes/userRoutes.js';
+import waypointRoutes from './presentation/routes/waypointRoutes.js';
+import routeRoutes from './presentation/routes/routeRoutes.js';
+import mapRoutes from './presentation/routes/mapRoutes.js';
+import obstacleRoutes from './presentation/routes/obstacleRoutes.js';
 
 const app = express();
 

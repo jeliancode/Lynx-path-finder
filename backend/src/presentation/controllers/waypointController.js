@@ -1,4 +1,4 @@
-import * as waypointService from '../services/waypointService.js'
+import * as waypointService from '../../application/services/waypointService.js'
 
 export const createWaypoint = async (req, res) => {
     try {

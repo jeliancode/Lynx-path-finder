@@ -1,4 +1,4 @@
-import * as userRepository from '../repositories/userRepository.js';
+import * as userRepository from '../../infrastructure/repositories/userRepository.js';
 
 const validateUserData = (data) => {
     if (!data.username || !data.email) {
