@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  maps      Map[]
+  createdAt DateTime @default(now())
+}
+
+model Map {
+  id          String      @id @default(uuid())
+  name        String
+  width       Int
+  height      Int
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  obstacles   Obstacle[]
+  waypoints   Waypoint[] 
+  routes      Route[]
+  createdAt   DateTime    @default(now())
+}
+
+model Obstacle {
+  id    String @id @default(uuid())
+  x     Int
+  y     Int
+  size  Int
+  mapId String
+  map   Map    @relation(fields: [mapId], references: [id], onDelete: Cascade)
+}
+
+model Waypoint {
+  id    String @id @default(uuid())
+  name  String
+  x     Int
+  y     Int
+  mapId String
+  map   Map    @relation(fields: [mapId], references: [id], onDelete: Cascade)
+}
+
+model Route {
+  id        String   @id @default(uuid())
+  mapId     String
+  map       Map      @relation(fields: [mapId], references: [id])
+  startX    Int
+  startY    Int
+  endX      Int
+  endY      Int
+  distance  Float
+  path      Json
+  createdAt DateTime @default(now())
+}
