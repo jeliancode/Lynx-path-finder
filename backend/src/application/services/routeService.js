@@ -1,4 +1,6 @@
 import * as routeRepository from '../../infrastructure/repositories/routeRepository.js';
+import * as mapRepository from '../../infrastructure/repositories/mapRepository.js';
+import { calculateAStarPath } from '../../utils/pathFinder.js';
 
 const validateRouteData = (data) => {
     if (data.mapId <= 0) {
@@ -10,9 +12,38 @@ const validateRouteData = (data) => {
     return data;
 };
 
+const validateMap = async (mapId) => {
+    const map = await mapRepository.getMapById(mapId);
+    if (!map) {
+        throw new Error('El mapa especificado no existe');
+    }
+    return map;
+}
+
 export const createNewRoute = async (routeData) => {
     const validatedData = validateRouteData(routeData);
-    return await routeRepository.createRoute(validatedData);
+    const map = await validateMap(validatedData.mapId);
+
+    const startPoint = {x: validatedData.startX, y: validatedData.startY};
+    const endPoint = {x: validatedData.endX, y: validatedData.endY};
+
+    const {path, distance} = calculateAStarPath(
+        {
+            width: map.width,
+            height: map.height,
+            obstacles: map.obstacles
+        },
+        startPoint,
+        endPoint
+    );
+
+    const completeData = {
+        ...validatedData,
+        distance,
+        path
+    };
+
+    return await routeRepository.createRoute(completeData);
 };
 
 export const fetchAllRoutes = async () => {

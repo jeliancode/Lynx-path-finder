@@ -2,8 +2,8 @@ import * as routeService from '../../application/services/routeService.js';
 
 export const createRoute = async (req, res) => {
     try {
-        const { mapId, startX, startY, endX, endY, distance, path } = req.body;
-        const newRoute = await routeService.createNewRoute({ mapId, startX, startY, endX, endY, distance, path });
+        const { mapId, startX, startY, endX, endY} = req.body;
+        const newRoute = await routeService.createNewRoute({ mapId, startX, startY, endX, endY });
         
         res.status(201).json({
             success: true,
