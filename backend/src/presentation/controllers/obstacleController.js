@@ -15,6 +15,21 @@ export const createObstacle = async (req, res) => {
         });    }
 };
 
+export const createMultipleObstacles = async (req, res) => {
+    try {
+        const obstaclesData = req.body;
+        const newObstacles = await obstacleService.createMultipleObstacles(obstaclesData);
+        res.status(201).json({
+            success: true,
+            data: newObstacles
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });    }
+};
+
 export const getAllObstacles = async (req, res) => {
     try {
         const obstacles = await obstacleService.fetchAllObstacles();

@@ -12,6 +12,11 @@ export const createObstacle = async (obstacleData) => {
     return await obstacleRepository.createObstacle(validatedData);
 };
 
+export const createMultipleObstacles = async (obstaclesData) => {
+    const validatedData = obstaclesData.map(data => validateObstacleData(data));
+    return await obstacleRepository.createMultipleObstacles(validatedData);
+};
+
 export const fetchAllObstacles = async () => {
     return await obstacleRepository.getAllObstacles();
 };

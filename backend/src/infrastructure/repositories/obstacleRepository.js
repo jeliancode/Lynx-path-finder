@@ -11,6 +11,17 @@ export const createObstacle = async (obstacleData) => {
   });
 };
 
+export const createMultipleObstacles = async (obstaclesData) => {
+  return await prisma.obstacle.createMany({
+    data: obstaclesData.map(obstacle => ({
+        x: obstacle.x,
+        y: obstacle.y,
+        size: obstacle.size,
+        mapId: obstacle.mapId,
+    })),
+  });
+};
+
 export const getAllObstacles = async () => {
   return await prisma.obstacle.findMany();
 };
