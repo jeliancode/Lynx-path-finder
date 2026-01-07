@@ -1,6 +1,9 @@
 import * as routeRepository from '../../infrastructure/repositories/routeRepository.js';
-import * as mapRepository from '../../infrastructure/repositories/mapRepository.js';
+import { fetchMapById } from './mapService.js';
 import { calculateAStarPath } from '../../utils/pathFinder.js';
+import { validateMapConfiguration } from '../../utils/mapValidator.js';
+import { validateStartEndPoints } from '../../utils/routesConstraints.js';
+import { validateWaypointsReachable } from '../../utils/wayPointValidator.js';
 
 const validateRouteData = (data) => {
     if (data.mapId <= 0) {
@@ -12,18 +15,9 @@ const validateRouteData = (data) => {
     return data;
 };
 
-const validateMap = async (mapId) => {
-    const map = await mapRepository.getMapById(mapId);
-    if (!map) {
-        throw new Error('El mapa especificado no existe');
-    }
-    return map;
-}
-
 export const createNewRoute = async (routeData) => {
     const validatedData = validateRouteData(routeData);
-    const map = await validateMap(validatedData.mapId);
-
+    const map = await fetchMapById(validatedData.mapId);
     const startPoint = {x: validatedData.startX, y: validatedData.startY};
     const endPoint = {x: validatedData.endX, y: validatedData.endY};
 
@@ -44,6 +38,25 @@ export const createNewRoute = async (routeData) => {
     };
 
     return await routeRepository.createRoute(completeData);
+};
+
+export const validateRoute = async (routeId) => {
+    const route = await routeRepository.getRouteById(routeId);
+    const mapId = route.mapId;
+    const map = await fetchMapById(mapId);
+
+    validateMapConfiguration(map);
+
+    const startPoint = {x: route.startX, y: route.startY};
+    const endPoint = {x: route.endX, y: route.endY};
+    const mapObstacles = map.obstacles;
+
+    validateStartEndPoints(startPoint, endPoint, mapObstacles);
+
+    const waypoints = map.waypoints;
+    const path = route.path;
+
+    validateWaypointsReachable(path, waypoints);
 };
 
 export const fetchAllRoutes = async () => {

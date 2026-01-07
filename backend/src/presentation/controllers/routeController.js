@@ -17,6 +17,23 @@ export const createRoute = async (req, res) => {
     }
 };
 
+export const validateRoute = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await routeService.validateRoute(id);
+
+        res.status(200).json({
+            success: true,
+            message: 'Ruta validada exitosamente'
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 export const getAllRoutes = async (req, res) => {
     try {
         const routes = await routeService.fetchAllRoutes();
