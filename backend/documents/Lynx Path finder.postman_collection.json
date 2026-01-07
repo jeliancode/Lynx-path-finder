@@ -297,7 +297,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n  { \"x\": 1, \"y\": 2, \"size\": 1, \"mapId\": \"{{map_id}}\" },\n  { \"x\": 3, \"y\": 4, \"size\": 1, \"mapId\": \"{{map_id}}\" },\n  { \"x\": 5, \"y\": 5, \"size\": 2, \"mapId\": \"{{map_id}}\" }\n]",
+							"raw": "[\n  { \"x\": 2, \"y\": 3, \"size\": 1, \"mapId\": \"{{map_id}}\" },\n  { \"x\": 6, \"y\": 7, \"size\": 1, \"mapId\": \"{{map_id}}\" },\n  { \"x\": 10, \"y\": 15, \"size\": 2, \"mapId\": \"{{map_id}}\" }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -451,7 +451,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n  { \"name\": \"Stop 1\", \"x\": 2, \"y\": 6, \"mapId\": \"{{map_id}}\" },\n  { \"name\": \"Stop 1\", \"x\": 4, \"y\": 7, \"mapId\": \"{{map_id}}\" },\n  { \"name\": \"Stop 1\", \"x\": 7, \"y\": 7, \"mapId\": \"{{map_id}}\" }\n]",
+							"raw": "[\n  { \"name\": \"Stop 1\", \"x\": 2, \"y\": 6, \"mapId\": \"{{map_id}}\" },\n  { \"name\": \"Stop 1\", \"x\": 4, \"y\": 7, \"mapId\": \"{{map_id}}\" },\n  { \"name\": \"Stop 1\", \"x\": 18, \"y\": 18, \"mapId\": \"{{map_id}}\" }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -578,7 +578,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"mapId\": \"{{map_id}}\", \n    \"startX\": 1, \n    \"startY\": -1, \n    \"endX\": 8, \n    \"endY\": 9\n}",
+							"raw": "{\n    \"mapId\": \"{{map_id}}\", \n    \"startX\": 0, \n    \"startY\": 0, \n    \"endX\": 19, \n    \"endY\": 19\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -593,6 +593,25 @@
 							"path": [
 								"routes",
 								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate route",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/routes/validate/{{route_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"routes",
+								"validate",
+								"{{route_id}}"
 							]
 						}
 					},
