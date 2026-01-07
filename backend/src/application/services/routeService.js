@@ -1,58 +1,43 @@
 import * as routeRepository from '../../infrastructure/repositories/routeRepository.js';
 import { fetchMapById } from './mapService.js';
-import { calculateAStarPath } from '../../utils/pathFinder.js';
-import { validateMapConfiguration } from '../../utils/mapValidator.js';
-import { validateStartEndPoints } from '../../utils/routesConstraints.js';
+import { buildRouteThroughWaypoints } from '../../utils/routeBuilder.js';
 import { validateWaypointsReachable } from '../../utils/wayPointValidator.js';
-
-const validateRouteData = (data) => {
-    if (data.mapId <= 0) {
-        throw new Error('Invalid route data: Map ID must be greater than 0 ');
-    }
-    if (data.distance <= 0) {
-        throw new Error('Invalid route data: Distance must be greater than 0');
-    }
-    return data;
-};
+import { validateRoute} from '../../utils/routeValidator.js';
 
 export const createNewRoute = async (routeData) => {
-    const validatedData = validateRouteData(routeData);
-    const map = await fetchMapById(validatedData.mapId);
-    const startPoint = {x: validatedData.startX, y: validatedData.startY};
-    const endPoint = {x: validatedData.endX, y: validatedData.endY};
+    const map = await validateRoute(routeData);
+    const startPoint = {x: routeData.startX, y: routeData.startY};
+    const endPoint = {x: routeData.endX, y: routeData.endY};
 
-    const {path, distance} = calculateAStarPath(
+    const waypoints = map.waypoints.map(wp => ({
+        x: wp.x,
+        y: wp.y
+    }));
+
+    const { path, distance } = buildRouteThroughWaypoints(
         {
             width: map.width,
             height: map.height,
             obstacles: map.obstacles
         },
         startPoint,
+        waypoints,
         endPoint
     );
 
     const completeData = {
-        ...validatedData,
+        ...routeData,
         distance,
         path
-    };
+    }; 
 
     return await routeRepository.createRoute(completeData);
 };
 
-export const validateRoute = async (routeId) => {
+export const validateRouteWaypoints = async (routeId) => {
     const route = await routeRepository.getRouteById(routeId);
     const mapId = route.mapId;
     const map = await fetchMapById(mapId);
-
-    validateMapConfiguration(map);
-
-    const startPoint = {x: route.startX, y: route.startY};
-    const endPoint = {x: route.endX, y: route.endY};
-    const mapObstacles = map.obstacles;
-
-    validateStartEndPoints(startPoint, endPoint, mapObstacles);
-
     const waypoints = map.waypoints;
     const path = route.path;
 

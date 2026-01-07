@@ -17,10 +17,10 @@ export const createRoute = async (req, res) => {
     }
 };
 
-export const validateRoute = async (req, res) => {
+export const validateRouteWaypoints = async (req, res) => {
     try {
         const { id } = req.params;
-        await routeService.validateRoute(id);
+        await routeService.validateRouteWaypoints(id);
 
         res.status(200).json({
             success: true,
