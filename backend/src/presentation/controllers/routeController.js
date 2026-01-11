@@ -2,12 +2,29 @@ import * as routeService from '../../application/services/routeService.js';
 
 export const createRoute = async (req, res) => {
     try {
-        const { mapId, startX, startY, endX, endY, distance, path } = req.body;
-        const newRoute = await routeService.createNewRoute({ mapId, startX, startY, endX, endY, distance, path });
+        const { mapId, startX, startY, endX, endY} = req.body;
+        const newRoute = await routeService.createNewRoute({ mapId, startX, startY, endX, endY });
         
         res.status(201).json({
             success: true,
             data: newRoute
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+export const validateRouteWaypoints = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await routeService.validateRouteWaypoints(id);
+
+        res.status(200).json({
+            success: true,
+            message: 'Ruta validada exitosamente'
         });
     } catch (error) {
         res.status(400).json({

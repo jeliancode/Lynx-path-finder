@@ -143,7 +143,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"map test\", \n    \"width\": 6, \n    \"height\": 6, \n    \"userId\": \"{{account_id}}\"\n}",
+							"raw": "{\n    \"name\": \"map test\", \n    \"width\": 10, \n    \"height\": 20, \n    \"userId\": \"{{account_id}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -261,135 +261,162 @@
 			]
 		},
 		{
-			"name": "Waypoints",
+			"name": "Obstacles",
 			"item": [
 				{
-					"name": "Obstacles",
-					"item": [
-						{
-							"name": "Create obstacle",
-							"request": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"x\": 5,\n    \"y\": 4,\n    \"size\": 5,\n    \"mapId\": \"{{map_id}}\"\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{base_url}}/obstacles/",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"obstacles",
-										""
-									]
+					"name": "Create obstacle",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"x\": 5,\n    \"y\": 4,\n    \"size\": 2,\n    \"mapId\": \"{{map_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
 								}
-							},
-							"response": []
+							}
 						},
-						{
-							"name": "Get all obstacles",
-							"protocolProfileBehavior": {
-								"disableBodyPruning": true
-							},
-							"request": {
-								"method": "GET",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"username\": \"Jelian\",\n    \"email\": \"test.email@jala\",\n    \"password\": \"Admin123\"\n}"
-								},
-								"url": {
-									"raw": "{{base_url}}/obstacles/",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"obstacles",
-										""
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Get obstacle by id",
-							"protocolProfileBehavior": {
-								"disableBodyPruning": true
-							},
-							"request": {
-								"method": "GET",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"username\": \"Jelian\",\n    \"email\": \"test.email@jala\",\n    \"password\": \"Admin123\"\n}"
-								},
-								"url": {
-									"raw": "{{base_url}}/obstacles/{{obstacle_id}}",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"obstacles",
-										"{{obstacle_id}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Update obstacle",
-							"request": {
-								"method": "PUT",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"x\": 3,\n    \"y\": -1,\n    \"size\": 1\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{base_url}}/obstacles/{{obstacle_id}}",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"obstacles",
-										"{{obstacle_id}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Delete obstacle",
-							"request": {
-								"method": "DELETE",
-								"header": [],
-								"url": {
-									"raw": "{{base_url}}/obstacles/{{obstacle_id}}",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"obstacles",
-										"{{obstacle_id}}"
-									]
-								}
-							},
-							"response": []
+						"url": {
+							"raw": "{{base_url}}/obstacles/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"obstacles",
+								""
+							]
 						}
-					]
+					},
+					"response": []
 				},
+				{
+					"name": "Create multiple obstacle",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  { \"x\": 2, \"y\": 3, \"size\": 1, \"mapId\": \"{{map_id}}\" },\n  { \"x\": 6, \"y\": 7, \"size\": 1, \"mapId\": \"{{map_id}}\" },\n  { \"x\": 10, \"y\": 15, \"size\": 2, \"mapId\": \"{{map_id}}\" }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/obstacles/bulk",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"obstacles",
+								"bulk"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all obstacles",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"Jelian\",\n    \"email\": \"test.email@jala\",\n    \"password\": \"Admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/obstacles/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"obstacles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get obstacle by id",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"Jelian\",\n    \"email\": \"test.email@jala\",\n    \"password\": \"Admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/obstacles/{{obstacle_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"obstacles",
+								"{{obstacle_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update obstacle",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"x\": 3,\n    \"y\": -1,\n    \"size\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/obstacles/{{obstacle_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"obstacles",
+								"{{obstacle_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete obstacle",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/obstacles/{{obstacle_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"obstacles",
+								"{{obstacle_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Waypoints",
+			"item": [
 				{
 					"name": "Create waypoint",
 					"request": {
@@ -412,6 +439,33 @@
 							"path": [
 								"waypoints",
 								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create multiple waypoints",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  { \"name\": \"Stop 1\", \"x\": 2, \"y\": 6, \"mapId\": \"{{map_id}}\" },\n  { \"name\": \"Stop 1\", \"x\": 4, \"y\": 7, \"mapId\": \"{{map_id}}\" },\n  { \"name\": \"Stop 1\", \"x\": 18, \"y\": 18, \"mapId\": \"{{map_id}}\" }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/waypoints/bulk",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"waypoints",
+								"bulk"
 							]
 						}
 					},
@@ -524,7 +578,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"mapId\": \"{{map_id}}\", \n    \"startX\": 1, \n    \"startY\": -1, \n    \"endX\": 8, \n    \"endY\": 9, \n    \"distance\": 10,\n    \"path\": [\n    { \"x\": 0, \"y\": 0 },\n    { \"x\": 1, \"y\": 1 },\n    { \"x\": 2, \"y\": 2 },\n    { \"x\": 3, \"y\": 3 },\n    { \"x\": 4, \"y\": 4 },\n    { \"x\": 5, \"y\": 5 },\n    { \"x\": 5, \"y\": 6 },\n    { \"x\": 5, \"y\": 7 },\n    { \"x\": 5, \"y\": 8 }\n    ]\n}",
+							"raw": "{\n    \"mapId\": \"{{map_id}}\", \n    \"startX\": 0, \n    \"startY\": 0, \n    \"endX\": 19, \n    \"endY\": 19\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -539,6 +593,25 @@
 							"path": [
 								"routes",
 								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate route",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/routes/validate/{{route_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"routes",
+								"validate",
+								"{{route_id}}"
 							]
 						}
 					},

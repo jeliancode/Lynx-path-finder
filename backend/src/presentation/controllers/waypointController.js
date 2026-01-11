@@ -17,6 +17,23 @@ export const createWaypoint = async (req, res) => {
     }
 };
 
+export const createMultipleWaypoints = async (req, res) => {
+    try {
+        const waypointsData = req.body;
+        const newWaypoints = await waypointService.createMultipleWaypoints(waypointsData);
+
+        res.status(201).json({
+            success: true,
+            data: newWaypoints
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 export const getAllWaypoints = async (req, res) => {
     try {
         const waypoints = await waypointService.fetchAllWaypoints();

@@ -11,6 +11,17 @@ export const createWaypoint = async (waypointData) => {
   });
 };
 
+export const createMultipleWaypoints = async (waypointsData) => {
+  return await prisma.waypoint.createMany({
+    data: waypointsData.map(waypoint => ({
+        name: waypoint.name,
+        x: waypoint.x,
+        y: waypoint.y,
+        mapId: waypoint.mapId,
+    })),
+  });
+};
+
 export const getAllWaypoints = async () => {
   return await prisma.waypoint.findMany();
 };

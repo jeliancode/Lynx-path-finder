@@ -5,6 +5,7 @@ const router = express.Router();
 
 router
     .post('/', waypointController.createWaypoint)
+    .post('/bulk', waypointController.createMultipleWaypoints)
     .get('/', waypointController.getAllWaypoints)
     .get('/:id', waypointController.getWaypointById)
     .put('/:id', waypointController.updateWaypoint)

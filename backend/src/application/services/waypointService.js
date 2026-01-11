@@ -15,6 +15,11 @@ export const createNewWaypoint = async (waypointData) => {
     return await waypointRepository.createWaypoint(validatedData);
 };
 
+export const createMultipleWaypoints = async (waypointsData) => {
+    const validatedData = waypointsData.map(data => validateWaypointData(data));
+    return await waypointRepository.createMultipleWaypoints(validatedData);
+};
+
 export const fetchAllWaypoints = async () => {
     return await waypointRepository.getAllWaypoints();
 };

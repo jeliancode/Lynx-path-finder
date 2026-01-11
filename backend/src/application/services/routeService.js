@@ -1,18 +1,47 @@
 import * as routeRepository from '../../infrastructure/repositories/routeRepository.js';
-
-const validateRouteData = (data) => {
-    if (data.mapId <= 0) {
-        throw new Error('Invalid route data: Map ID must be greater than 0 ');
-    }
-    if (data.distance <= 0) {
-        throw new Error('Invalid route data: Distance must be greater than 0');
-    }
-    return data;
-};
+import { fetchMapById } from './mapService.js';
+import { buildRouteThroughWaypoints } from '../../utils/routeBuilder.js';
+import { validateWaypointsReachable } from '../../utils/wayPointValidator.js';
+import { validateRoute} from '../../utils/routeValidator.js';
 
 export const createNewRoute = async (routeData) => {
-    const validatedData = validateRouteData(routeData);
-    return await routeRepository.createRoute(validatedData);
+    const map = await validateRoute(routeData);
+    const startPoint = {x: routeData.startX, y: routeData.startY};
+    const endPoint = {x: routeData.endX, y: routeData.endY};
+
+    const waypoints = map.waypoints.map(wp => ({
+        x: wp.x,
+        y: wp.y
+    }));
+
+    const { path, distance } = buildRouteThroughWaypoints(
+        {
+            width: map.width,
+            height: map.height,
+            obstacles: map.obstacles
+        },
+        startPoint,
+        waypoints,
+        endPoint
+    );
+
+    const completeData = {
+        ...routeData,
+        distance,
+        path
+    }; 
+
+    return await routeRepository.createRoute(completeData);
+};
+
+export const validateRouteWaypoints = async (routeId) => {
+    const route = await routeRepository.getRouteById(routeId);
+    const mapId = route.mapId;
+    const map = await fetchMapById(mapId);
+    const waypoints = map.waypoints;
+    const path = route.path;
+
+    validateWaypointsReachable(path, waypoints);
 };
 
 export const fetchAllRoutes = async () => {
