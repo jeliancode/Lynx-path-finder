@@ -101,3 +101,9 @@ Inicializar prisma studio:
 ```bash
 npx prisma studio
 ```
+
+Si la base de datos ya existe solo se debe realizar la generacion del cliente y posteriormente actualizar la base de datos a la estrcutura que ya definimos:
+
+```bash
+npx prisma db push
+```

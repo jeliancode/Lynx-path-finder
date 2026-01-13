@@ -2,13 +2,11 @@ import * as routeRepository from '../../infrastructure/repositories/routeReposit
 import { fetchMapById } from './mapService.js';
 import { buildRouteThroughWaypoints } from '../../utils/routeBuilder.js';
 import { validateWaypointsReachable } from '../../utils/wayPointValidator.js';
-import { validateRoute} from '../../utils/routeValidator.js';
 
-export const createNewRoute = async (routeData) => {
-    const map = await validateRoute(routeData);
+export const createNewRoute = async (routeData, map) => {
     const startPoint = {x: routeData.startX, y: routeData.startY};
     const endPoint = {x: routeData.endX, y: routeData.endY};
-
+    
     const waypoints = map.waypoints.map(wp => ({
         x: wp.x,
         y: wp.y
