@@ -1,25 +1,22 @@
 import { getMapById } from "../infrastructure/repositories/mapRepository.js";
+import validateWith from "../utils/validator/validator.js";
 
-const validateMapExists = async (req, res, next) => {
-    try {    
-    const { mapId } = req.body;
+const existsMapId = (mapId) => mapId != null;
+const isMapFound = (map) => map != null;
 
-    if(!mapId) {
-        return res.status(400).json({ error: 'Map ID is required' });
-    }
+export const validateMapExists = () => async (req, res, next) => {
+  try {
+    const { mapId } = req.params;
+
+    validateWith(existsMapId, () => new Error("Map ID is required"))(mapId);
 
     const map = await getMapById(mapId);
 
-    if (!map) {
-        return res.status(404).json({ error: 'Map not found' });
-    }
+    validateWith(isMapFound, () => new Error("Map not found"))(map);
 
     req.map = map;
-
     next();
-    } catch (error) { 
-        next(error);
-    }
+  } catch (err) {
+    next(err);
+  }
 };
-
-export default validateMapExists;

@@ -1,4 +1,4 @@
-import { calculateAStarPath } from './pathFinder.js';
+import { calculateAStarPath } from './aStarAlgorithm.js';
 
 export const buildRouteThroughWaypoints = (
     mapConfig,

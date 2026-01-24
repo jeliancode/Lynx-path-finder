@@ -1,11 +1,18 @@
 import * as routeRepository from '../../infrastructure/repositories/routeRepository.js';
 import { fetchMapById } from './mapService.js';
-import { buildRouteThroughWaypoints } from '../../utils/routeBuilder.js';
-import { validateWaypointsReachable } from '../../utils/wayPointValidator.js';
+import { buildRouteThroughWaypoints } from '../../utils/pathFinder/routeBuilder.js';
+import { validateWaypointsReachable } from '../../utils/validator/wayPointValidator.js';
+import { validateMapConfiguration } from '../../utils/validator/validateMapConfig.js';
+import { validateStartEndPoints } from '../../utils/validator/validateStartEndPoints.js';
 
 export const createNewRoute = async (routeData, map) => {
+    validateMapConfiguration(map);
+
     const startPoint = {x: routeData.startX, y: routeData.startY};
     const endPoint = {x: routeData.endX, y: routeData.endY};
+    const obstacles = map.obstacles;
+
+    validateStartEndPoints(obstacles)(startPoint)(endPoint);
     
     const waypoints = map.waypoints.map(wp => ({
         x: wp.x,
