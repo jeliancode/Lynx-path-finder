@@ -12,8 +12,8 @@ app.use(express.json());
 app
     .use('/api/users', userRoutes)
     .use('/api/maps', mapRoutes)
-    .use('/api/waypoints/:mapId', validateMapExists, waypointRoutes)
-    .use('/api/routes/:mapId', validateMapExists, routeRoutes)
-    .use('/api/obstacles/:mapId', validateMapExists, obstacleRoutes);
+    .use('/api/waypoints/:mapId', validateMapExists(), waypointRoutes)
+    .use('/api/routes/:mapId', validateMapExists(), routeRoutes)
+    .use('/api/obstacles/:mapId', validateMapExists(), obstacleRoutes);
 
 export default app;
