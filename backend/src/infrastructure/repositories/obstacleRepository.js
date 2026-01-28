@@ -5,7 +5,8 @@ export const createObstacle = async (obstacleData) => {
     data: {
         x: obstacleData.x,
         y: obstacleData.y,
-        size: obstacleData.size,
+        width: obstacleData.width,
+        height: obstacleData.height,
         mapId: obstacleData.mapId,
     },
   });
@@ -16,7 +17,8 @@ export const createMultipleObstacles = async (obstaclesData) => {
     data: obstaclesData.map(obstacle => ({
         x: obstacle.x,
         y: obstacle.y,
-        size: obstacle.size,
+        width: obstacle.width,
+        height: obstacle.height,
         mapId: obstacle.mapId,
     })),
   });

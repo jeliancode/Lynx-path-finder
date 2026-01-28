@@ -1,7 +1,7 @@
 import * as routeRepository from '../../infrastructure/repositories/routeRepository.js';
 import { fetchMapById } from './mapService.js';
 import { buildRouteThroughWaypoints } from '../../utils/pathFinder/routeBuilder.js';
-import { validateWaypointsReachable } from '../../utils/validator/wayPointValidator.js';
+import { validateWaypointsReachable } from '../../utils/validator/reachableWaypointValidator.js';
 import { validateMapConfiguration } from '../../utils/validator/mapConfigValidator.js';
 import { validateStartEndPoints } from '../../utils/validator/routePointsValidator.js';
 
@@ -46,7 +46,8 @@ export const validateRouteWaypoints = async (routeId) => {
     const waypoints = map.waypoints;
     const path = route.path;
 
-    validateWaypointsReachable(path, waypoints);
+    validateWaypointsReachable(path)(waypoints);
+
 };
 
 export const fetchAllRoutes = async () => {
@@ -60,8 +61,7 @@ export const fetchRouteById = async (id) => {
 };
 
 export const modifyRouteById = async (id, updateData) => { 
-    const validatedData = validateRouteData(updateData);
-    return await routeRepository.updateRouteById(id, validatedData);
+    return await routeRepository.updateRouteById(id, updateData);
 };
 
 export const removeRouteById = async (id) => {

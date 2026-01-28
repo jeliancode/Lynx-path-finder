@@ -2,9 +2,10 @@ import * as obstacleService from '../../application/services/obstacleService.js'
 
 export const createObstacle = async (req, res) => {
     try {
-        const {x, y, size, mapId} = req.body;
+        const { x, y, width, height } = req.body;
+        const { mapId } = req.params;
         const map = req.map;
-        const newObstacle = await obstacleService.createObstacle(map, { x, y, size, mapId });
+        const newObstacle = await obstacleService.createObstacle(map, { x, y, width, height, mapId });
         res.status(201).json({
             success: true,
             data: newObstacle
@@ -20,7 +21,12 @@ export const createMultipleObstacles = async (req, res) => {
     try {
         const obstaclesData = req.body;
         const map = req.map;
-        const newObstacles = await obstacleService.createMultipleObstacles(map, obstaclesData);
+        const { mapId } = req.params;
+        const obstaclesWithMapId = obstaclesData.map(obstacle =>({
+            ...obstacle,
+            mapId
+        }))
+        const newObstacles = await obstacleService.createMultipleObstacles(map, obstaclesWithMapId);
         res.status(201).json({
             success: true,
             data: newObstacles

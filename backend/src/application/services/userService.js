@@ -1,15 +1,9 @@
 import * as userRepository from '../../infrastructure/repositories/userRepository.js';
-
-const validateUserData = (data) => {
-    if (!data.username || !data.email) {
-        throw new Error('Datos de usuario inválidos: El nombre de usuario y el correo electrónico son requeridos');
-    }
-    return data;
-};
+import { validateUserData } from '../../utils/validator/entityDataValidator.js';
 
 export const createNewUser = async (userData) => {
-    const validatedData = validateUserData(userData);
-    return await userRepository.createUser(validatedData);
+    validateUserData(userData);
+    return await userRepository.createUser(userData);
 };
 
 export const fetchAllUsers = async () => {
@@ -23,8 +17,7 @@ export const fetchUserById = async (id) => {
 };
 
 export const modifyUserById = async (id, updateData) => {
-    const validatedData = validateUserData(updateData);
-    return await userRepository.updateUserById(id, validatedData);
+    return await userRepository.updateUserById(id, updateData);
 };
 
 export const removeUserById = async (id) => {

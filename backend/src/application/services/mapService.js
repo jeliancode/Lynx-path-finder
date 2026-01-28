@@ -1,15 +1,9 @@
 import * as mapRepository from '../../infrastructure/repositories/mapRepository.js';
-
-const validateMapData = (data) => {
-    if (!data.name || data.width <= 0 || data.height <= 0) {
-        throw new Error('Datos de mapa inválidos: El nombre es requerido y las dimensiones deben ser mayores a 0');
-    }
-    return data;
-};
+import { validateMapData } from '../../utils/validator/entityDataValidator.js';
 
 export const createNewMap = async (mapData) => {
-    const validatedData = validateMapData(mapData);
-    return await mapRepository.createMap(validatedData);
+    validateMapData(mapData);
+    return await mapRepository.createMap(mapData);
 };
 
 export const fetchAllMaps = async () => {
@@ -23,8 +17,7 @@ export const fetchMapById = async (id) => {
 };
 
 export const modifyMapById = async (id, updateData) => {
-    const validatedData = validateMapData(updateData);
-    return await mapRepository.updateMapById(id, validatedData);
+    return await mapRepository.updateMapById(id, updateData);
 };
 
 export const removeMapById = async (id) => {

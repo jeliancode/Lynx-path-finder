@@ -1,7 +1,7 @@
 import express from 'express';
 import * as waypointController from '../controllers/waypointController.js';
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router
     .post('/', waypointController.createWaypoint)

@@ -2,7 +2,8 @@ import * as waypointService from '../../application/services/waypointService.js'
 
 export const createWaypoint = async (req, res) => {
     try {
-        const { name, x, y, mapId } = req.body;
+        const { name, x, y } = req.body;
+        const { mapId } = req.params;
         const map = req.map;
 
         const newWaypoint = await waypointService.createNewWaypoint(map, { name, x, y, mapId });
@@ -23,8 +24,13 @@ export const createMultipleWaypoints = async (req, res) => {
     try {
         const waypointsData = req.body;
         const map = req.map;
+        const { mapId } = req.params;
+        const waypointsWithMapId = waypointsData.map(waypoint => ({
+            ...waypoint,
+            mapId
+        }))
 
-        const newWaypoints = await waypointService.createMultipleWaypoints(map, waypointsData);
+        const newWaypoints = await waypointService.createMultipleWaypoints(map, waypointsWithMapId);
 
         res.status(201).json({
             success: true,

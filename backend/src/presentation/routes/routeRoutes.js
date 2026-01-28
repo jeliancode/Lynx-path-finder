@@ -1,7 +1,7 @@
 import express from 'express';
 import * as routeController from '../controllers/routeController.js';
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router
     .post('/', routeController.createRoute)

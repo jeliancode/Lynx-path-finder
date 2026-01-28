@@ -1,26 +1,17 @@
 import * as waypointRepository from '../../infrastructure/repositories/waypointRepository.js';
 import { validateWaypointsInsideMap } from '../../utils/validator/insideMapValidator.js';
-
-const validateWaypointData = (data) => {
-    if (data.mapId <= 0) {
-        throw new Error('Invalid waypoint data: Map ID must be greater than 0 ');
-    }
-    if (data.name.length === 0) {
-        throw new Error('Invalid waypoint data: Name cannot be empty');
-    }
-    return data;
-}
+import { validateWaypointData } from '../../utils/validator/entityDataValidator.js';
 
 export const createNewWaypoint = async (map, waypointData) => {
-    const validatedData = validateWaypointData(waypointData);
-    validateWaypointsInsideMap(map)(validatedData);
-    return await waypointRepository.createWaypoint(validatedData);
+    validateWaypointData(waypointData);
+    validateWaypointsInsideMap(map)(waypointData);
+    return await waypointRepository.createWaypoint(waypointData);
 };
 
 export const createMultipleWaypoints = async (map, waypointsData) => {
-    const validatedData = waypointsData.map(data => validateWaypointData(data));
-    validateWaypointsInsideMap(map)(validatedData);
-    return await waypointRepository.createMultipleWaypoints(validatedData);
+    waypointsData.map(data => validateWaypointData(data));
+    validateWaypointsInsideMap(map)(waypointsData);
+    return await waypointRepository.createMultipleWaypoints(waypointsData);
 };
 
 export const fetchAllWaypoints = async () => {
@@ -34,8 +25,7 @@ export const fetchWaypointById = async (id) => {
 };
 
 export const modifyWaypointById = async (id, updateData) => { 
-    const validatedData = validateWaypointData(updateData);
-    return await waypointRepository.updateWaypointById(id, validatedData);
+    return await waypointRepository.updateWaypointById(id, updateData);
 };
 
 export const removeWaypointById = async (id) => {
