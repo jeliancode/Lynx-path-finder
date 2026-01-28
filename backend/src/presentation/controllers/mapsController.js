@@ -74,7 +74,7 @@ export const deleteMap = async (req, res) => {
         
         res.status(200).json({
             success: true,
-            message: 'Mapa eliminado exitosamente'
+            message: 'Map delete succesfully'
         });
     } catch (error) {
         res.status(500).json({

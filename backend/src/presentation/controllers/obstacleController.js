@@ -2,8 +2,10 @@ import * as obstacleService from '../../application/services/obstacleService.js'
 
 export const createObstacle = async (req, res) => {
     try {
-        const {x, y, size, mapId} = req.body;
-        const newObstacle = await obstacleService.createObstacle({ x, y, size, mapId });
+        const { x, y, width, height } = req.body;
+        const { mapId } = req.params;
+        const map = req.map;
+        const newObstacle = await obstacleService.createObstacle(map, { x, y, width, height, mapId });
         res.status(201).json({
             success: true,
             data: newObstacle
@@ -18,7 +20,13 @@ export const createObstacle = async (req, res) => {
 export const createMultipleObstacles = async (req, res) => {
     try {
         const obstaclesData = req.body;
-        const newObstacles = await obstacleService.createMultipleObstacles(obstaclesData);
+        const map = req.map;
+        const { mapId } = req.params;
+        const obstaclesWithMapId = obstaclesData.map(obstacle =>({
+            ...obstacle,
+            mapId
+        }))
+        const newObstacles = await obstacleService.createMultipleObstacles(map, obstaclesWithMapId);
         res.status(201).json({
             success: true,
             data: newObstacles
@@ -83,7 +91,7 @@ export const deleteObstacle = async (req, res) => {
         await obstacleService.removeObstacleById(id);
         res.status(200).json({
             success: true,
-            message: 'Obstaculo eliminado exitosamente'
+            message: 'Obstacle deleted successfully'
         });    } catch (error) {
         res.status(500).json({
             success: false,

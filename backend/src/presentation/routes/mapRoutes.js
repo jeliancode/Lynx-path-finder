@@ -1,8 +1,7 @@
 import express from 'express';
 import * as mapController from '../controllers/mapsController.js';
 
-const router = express.Router();
-
+const router = express.Router({ mergeParams: true });
 router
     .post('/', mapController.createMap)
     .get('/', mapController.getAllMaps)

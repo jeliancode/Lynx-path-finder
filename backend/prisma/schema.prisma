@@ -32,7 +32,8 @@ model Obstacle {
   id    String @id @default(uuid())
   x     Int
   y     Int
-  size  Int
+  width Int
+  height Int
   mapId String
   map   Map    @relation(fields: [mapId], references: [id], onDelete: Cascade)
 }

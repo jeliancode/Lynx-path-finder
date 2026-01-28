@@ -2,8 +2,11 @@ import * as waypointService from '../../application/services/waypointService.js'
 
 export const createWaypoint = async (req, res) => {
     try {
-        const { name, x, y, mapId } = req.body;
-        const newWaypoint = await waypointService.createNewWaypoint({ name, x, y, mapId });
+        const { name, x, y } = req.body;
+        const { mapId } = req.params;
+        const map = req.map;
+
+        const newWaypoint = await waypointService.createNewWaypoint(map, { name, x, y, mapId });
 
         res.status(201).json({
             success: true,
@@ -20,7 +23,14 @@ export const createWaypoint = async (req, res) => {
 export const createMultipleWaypoints = async (req, res) => {
     try {
         const waypointsData = req.body;
-        const newWaypoints = await waypointService.createMultipleWaypoints(waypointsData);
+        const map = req.map;
+        const { mapId } = req.params;
+        const waypointsWithMapId = waypointsData.map(waypoint => ({
+            ...waypoint,
+            mapId
+        }))
+
+        const newWaypoints = await waypointService.createMultipleWaypoints(map, waypointsWithMapId);
 
         res.status(201).json({
             success: true,
@@ -92,7 +102,7 @@ export const deleteWaypoint = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'Waypoint eliminado exitosamente'
+            message: 'Waypoint deleted successfully'
         });
     } catch (error) {
         res.status(500).json({

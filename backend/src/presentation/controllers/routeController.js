@@ -2,7 +2,8 @@ import * as routeService from '../../application/services/routeService.js';
 
 export const createRoute = async (req, res) => {
     try {
-        const { mapId, startX, startY, endX, endY} = req.body;
+        const { startX, startY, endX, endY} = req.body;
+        const { mapId } = req.params;
         const map = req.map;
         const newRoute = await routeService.createNewRoute({ mapId, startX, startY, endX, endY }, map);
 
@@ -25,7 +26,7 @@ export const validateRouteWaypoints = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'Ruta validada exitosamente'
+            message: 'Route validation completed'
         });
     } catch (error) {
         res.status(400).json({
@@ -93,7 +94,7 @@ export const deleteRoute = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'Ruta eliminada exitosamente'
+            message: 'Route deleted successfully'
         });
     } catch (error) {
         res.status(500).json({

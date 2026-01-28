@@ -26,7 +26,8 @@ CREATE TABLE "Obstacle" (
     "id" TEXT NOT NULL,
     "x" INTEGER NOT NULL,
     "y" INTEGER NOT NULL,
-    "size" INTEGER NOT NULL,
+    "width" INTEGER NOT NULL,
+    "height" INTEGER NOT NULL,
     "mapId" TEXT NOT NULL,
 
     CONSTRAINT "Obstacle_pkey" PRIMARY KEY ("id")
