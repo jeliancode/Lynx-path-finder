@@ -1,5 +1,5 @@
-import validateWith from "./validator.js";
-import pipe from "../funtional/pipe.js";
+import validateWith from './validator.js';
+import pipe from '../funtional/pipe.js';
 
 const hasValidName = (entityData) =>
     entityData.name != null || entityData.username != null;
@@ -17,21 +17,21 @@ const hasValidUserId = (entityData) =>
     entityData.userId != null;
 
 export const validateMapData = pipe(
-    validateWith(hasValidName, () => new Error("El mapa debe tener un nombre valido")),
-    validateWith(hasValidDimensions, () => new Error("El mapa debe contener dimensiones validas")),
-    validateWith(hasValidUserId, () => new Error("El mapa debe tener un user id asignado"))
+    validateWith(hasValidName, () => new Error('Map must have a valid name')),
+    validateWith(hasValidDimensions, () => new Error('Map must have valid dimensions')),
+    validateWith(hasValidUserId, () => new Error('Map must have a valid user id assigned'))
 );
 
 export const validateUserData = pipe(
-    validateWith(hasValidName, () => new Error("El usuario debe tener un nombre de usuario valido")),
-    validateWith(hasValidEmail, () => new Error("El usuario debe tener un correo electrónico valido")),
-    validateWith(hasValidPassword, () => new Error("El usuario debe tener una contraseña valida de al menos 8 caracteres"))
+    validateWith(hasValidName, () => new Error('User must have a valid username')),
+    validateWith(hasValidEmail, () => new Error('User must have a valid email address')),
+    validateWith(hasValidPassword, () => new Error('User must have a valid password of at least 8 characters'))
 );
 
 export const validateObstacleData = pipe(
-    validateWith(hasValidDimensions, () => new Error("El obstáculo debe tener dimensiones validas"))
+    validateWith(hasValidDimensions, () => new Error('Obstacle must have valid dimensions'))
 )
 
 export const validateWaypointData = pipe(
-    validateWith(hasValidName, () => new Error("El punto de parada debe tener un nombre valido")),
+    validateWith(hasValidName, () => new Error('Waypoint must have a valid name')),
 );

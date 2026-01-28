@@ -12,7 +12,7 @@ export const validateWaypointsReachable =
   (path) =>
     validateWith(
       (waypoints) => !firstUnreachable(pathToSet(path))(waypoints),
-      () => new Error("Hay un waypoint que no es alcanzable")
+      () => new Error('Some waypoints are not reachable in the given path')
     );
 
 

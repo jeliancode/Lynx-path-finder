@@ -1,4 +1,4 @@
-import validateWith from "./validator.js";
+import validateWith from './validator.js';
 
 const toKey = ({ x, y }) => `${x},${y}`;
 
@@ -11,7 +11,7 @@ const isBlocked = (obstacleSet) => (point) =>
 const validateNotBlocked = (obstacleSet, label) =>
   validateWith(
     (point) => !isBlocked(obstacleSet)(point),
-    () => new Error(`El punto de ${label} está bloqueado`)
+    () => new Error(`${label} point is blocked by an obstacle`)
   );
 
 
@@ -21,8 +21,8 @@ export const validateStartEndPoints =
   end => {
     const obstacleSet = obstacleSetFrom(obstacles);
 
-    validateNotBlocked(obstacleSet, "inicio")(start);
-    validateNotBlocked(obstacleSet, "destino")(end);
+    validateNotBlocked(obstacleSet, 'Start')(start);
+    validateNotBlocked(obstacleSet, 'Destiny')(end);
 
     return { start, end };
   };

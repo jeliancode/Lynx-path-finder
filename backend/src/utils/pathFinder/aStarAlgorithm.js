@@ -1,45 +1,45 @@
-const heuristic = (a, b) =>
-  Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+const manhattanDistance = (from, to) =>
+  Math.abs(from.x - to.x) + Math.abs(from.y - to.y);
 
 export const calculateAStarPath = (mapConfig, start, end) => {
   const { width, height, obstacles } = mapConfig;
 
-  const obstacleSet = new Set(obstacles.map(o => `${o.x},${o.y}`));
+  const obstacleSet = new Set(obstacles.map(obstacle => `${obstacle.x},${obstacle.y}`));
   const closedSet = new Set();
 
-  const openSet = [];
-  const openSetMap = new Map();
+  const openNodes = [];
+  const openNodesByKey = new Map();
 
   const startNode = {
     ...start,
-    g: 0,
-    f: heuristic(start, end),
+    costFromStart: 0,
+    estimatedTotal: manhattanDistance(start, end),
     parent: null
   };
 
-  openSet.push(startNode);
-  openSetMap.set(`${start.x},${start.y}`, startNode);
+  openNodes.push(startNode);
+  openNodesByKey.set(`${start.x},${start.y}`, startNode);
 
-  while (openSet.length > 0) {
-    openSet.sort((a, b) => a.f - b.f);
-    const current = openSet.shift();
-    openSetMap.delete(`${current.x},${current.y}`);
+  while (openNodes.length > 0) {
+    openNodes.sort((a, b) => a.f - b.f);
+    const currentNode = openNodes.shift();
+    openNodesByKey.delete(`${currentNode.x},${currentNode.y}`);
 
-    if (current.x === end.x && current.y === end.y) {
-      const path = reconstructPath(current);
+    if (currentNode.x === end.x && currentNode.y === end.y) {
+      const path = reconstructPath(currentNode);
       return {
         path,
-        distance: current.g - 1
+        distance: currentNode.g - 1
       };
     }
 
-    closedSet.add(`${current.x},${current.y}`);
+    closedSet.add(`${currentNode.x},${currentNode.y}`);
 
     const neighbors = [
-      { x: current.x + 1, y: current.y },
-      { x: current.x - 1, y: current.y },
-      { x: current.x, y: current.y + 1 },
-      { x: current.x, y: current.y - 1 }
+      { x: currentNode.x + 1, y: currentNode.y },
+      { x: currentNode.x - 1, y: currentNode.y },
+      { x: currentNode.x, y: currentNode.y + 1 },
+      { x: currentNode.x, y: currentNode.y - 1 }
     ];
 
     for (const neighbor of neighbors) {
@@ -52,28 +52,28 @@ export const calculateAStarPath = (mapConfig, start, end) => {
         closedSet.has(key)
       ) continue;
 
-      const gScore = current.g + 1;
+      const gScore = currentNode.g + 1;
 
-      const existing = openSetMap.get(key);
+      const existing = openNodesByKey.get(key);
 
       if (!existing) {
         const node = {
           ...neighbor,
           g: gScore,
-          f: gScore + heuristic(neighbor, end),
-          parent: current
+          f: gScore + manhattanDistance(neighbor, end),
+          parent: currentNode
         };
-        openSet.push(node);
-        openSetMap.set(key, node);
+        openNodes.push(node);
+        openNodesByKey.set(key, node);
       } else if (gScore < existing.g) {
         existing.g = gScore;
-        existing.f = gScore + heuristic(neighbor, end);
-        existing.parent = current;
+        existing.f = gScore + manhattanDistance(neighbor, end);
+        existing.parent = currentNode;
       }
     }
   }
 
-  throw new Error('No se encontró una ruta posible');
+  throw new Error('No possible route found');
 };
 
 const reconstructPath = (node) => {

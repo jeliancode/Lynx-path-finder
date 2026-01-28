@@ -12,7 +12,7 @@ export const fetchAllUsers = async () => {
 
 export const fetchUserById = async (id) => {
     const user = await userRepository.getUserById(id);
-    if (!user) throw new Error('Usuario no encontrado');
+    if (!user) throw new Error('User not found');
     return user;
 };
 

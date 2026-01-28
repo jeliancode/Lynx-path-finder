@@ -91,7 +91,7 @@ export const deleteObstacle = async (req, res) => {
         await obstacleService.removeObstacleById(id);
         res.status(200).json({
             success: true,
-            message: 'Obstaculo eliminado exitosamente'
+            message: 'Obstacle deleted successfully'
         });    } catch (error) {
         res.status(500).json({
             success: false,

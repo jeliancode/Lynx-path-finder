@@ -10,7 +10,7 @@ const adapter = new PrismaPg(pool);
 
 const prisma = new PrismaClient({
   adapter,
-  log: ["query", "info", "warn", "error"],
+  log: ['query', 'info', 'warn', 'error'],
 });
 
 export default prisma;

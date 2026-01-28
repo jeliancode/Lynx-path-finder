@@ -1,4 +1,4 @@
-import validateWith from "./validator.js";
+import validateWith from './validator.js';
 
 const asArray = (value) => Array.isArray(value) ? value : [value];
 
@@ -24,7 +24,7 @@ export const validateObstacleInsideMap = (map) =>
     entitiesInsideMap(
         map,
         obstaclePoint,
-        "Obstacles outsite the map boundary"
+        'Obstacles outsite the map boundary'
     )
 
 const waypointPoint = ({ x, y }) => ({ x, y });
@@ -33,5 +33,5 @@ export const validateWaypointsInsideMap = (map) =>
     entitiesInsideMap(
         map,
         waypointPoint,
-        "Waypoints outsite the map boundary"
+        'Waypoints outsite the map boundary'
     );

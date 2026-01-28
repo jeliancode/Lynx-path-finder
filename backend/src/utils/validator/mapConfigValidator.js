@@ -9,6 +9,6 @@ const hasWaypoints = (map) =>
 
 
 export const validateMapConfiguration = pipe(
-  validateWith(hasObstacles, () => new Error("El mapa debe contener obstáculos")),
-  validateWith(hasWaypoints, () => new Error("El mapa debe contener puntos de parada")),
+  validateWith(hasObstacles, () => new Error('Map must contain obstacles')),
+  validateWith(hasWaypoints, () => new Error('Map must contain waypoints')),
 );

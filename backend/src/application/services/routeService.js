@@ -47,7 +47,6 @@ export const validateRouteWaypoints = async (routeId) => {
     const path = route.path;
 
     validateWaypointsReachable(path)(waypoints);
-
 };
 
 export const fetchAllRoutes = async () => {

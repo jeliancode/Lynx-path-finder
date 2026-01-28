@@ -26,7 +26,7 @@ export const validateRouteWaypoints = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'Ruta validada exitosamente'
+            message: 'Route validation completed'
         });
     } catch (error) {
         res.status(400).json({
@@ -94,7 +94,7 @@ export const deleteRoute = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'Ruta eliminada exitosamente'
+            message: 'Route deleted successfully'
         });
     } catch (error) {
         res.status(500).json({

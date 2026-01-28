@@ -1,34 +1,22 @@
-import { calculateAStarPath } from './aStarAlgorithm.js';
+import { calculateAStarPath } from '../pathFinder/aStarCalculator.js';
 
-export const buildRouteThroughWaypoints = (
-    mapConfig,
-    start,
-    waypoints,
-    end
-) => {
-    const points = [start, ...waypoints, end];
+export const buildRouteThroughWaypoints = (mapConfig, start, waypoints, end) => {
+  const points = [start, ...waypoints, end];
 
-    let fullPath = [];
-    let totalDistance = 0;
+  const helper = (index, result) => {
+    if (index >= points.length - 1) return result;
 
-    for (let i = 0; i < points.length - 1; i++) {
-        const from = points[i];
-        const to = points[i + 1];
+    const from = points[index];
+    const to = points[index + 1];
+    const { path, distance } = calculateAStarPath(mapConfig, from, to);
 
-        const { path, distance } = calculateAStarPath(
-            mapConfig,
-            from,
-            to
-        );
+    const segment = index > 0 ? path.slice(1) : path;
 
-        if (i > 0) path.shift();
+    return helper(index + 1, {
+      path: [...result.path, ...segment],
+      distance: result.distance + distance
+    });
+  };
 
-        fullPath.push(...path);
-        totalDistance += distance;
-    }
-
-    return {
-        path: fullPath,
-        distance: totalDistance
-    };
+  return helper(0, { path: [], distance: 0 });
 };

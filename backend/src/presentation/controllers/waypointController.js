@@ -102,7 +102,7 @@ export const deleteWaypoint = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'Waypoint eliminado exitosamente'
+            message: 'Waypoint deleted successfully'
         });
     } catch (error) {
         res.status(500).json({
