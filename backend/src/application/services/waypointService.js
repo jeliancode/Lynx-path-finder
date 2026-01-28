@@ -1,4 +1,5 @@
 import * as waypointRepository from '../../infrastructure/repositories/waypointRepository.js';
+import { validateWaypointsInsideMap } from '../../utils/validator/insideMapValidator.js';
 
 const validateWaypointData = (data) => {
     if (data.mapId <= 0) {
@@ -10,13 +11,15 @@ const validateWaypointData = (data) => {
     return data;
 }
 
-export const createNewWaypoint = async (waypointData) => {
+export const createNewWaypoint = async (map, waypointData) => {
     const validatedData = validateWaypointData(waypointData);
+    validateWaypointsInsideMap(map)(validatedData);
     return await waypointRepository.createWaypoint(validatedData);
 };
 
-export const createMultipleWaypoints = async (waypointsData) => {
+export const createMultipleWaypoints = async (map, waypointsData) => {
     const validatedData = waypointsData.map(data => validateWaypointData(data));
+    validateWaypointsInsideMap(map)(validatedData);
     return await waypointRepository.createMultipleWaypoints(validatedData);
 };
 

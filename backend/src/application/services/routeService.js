@@ -2,8 +2,8 @@ import * as routeRepository from '../../infrastructure/repositories/routeReposit
 import { fetchMapById } from './mapService.js';
 import { buildRouteThroughWaypoints } from '../../utils/pathFinder/routeBuilder.js';
 import { validateWaypointsReachable } from '../../utils/validator/wayPointValidator.js';
-import { validateMapConfiguration } from '../../utils/validator/validateMapConfig.js';
-import { validateStartEndPoints } from '../../utils/validator/validateStartEndPoints.js';
+import { validateMapConfiguration } from '../../utils/validator/mapConfigValidator.js';
+import { validateStartEndPoints } from '../../utils/validator/routePointsValidator.js';
 
 export const createNewRoute = async (routeData, map) => {
     validateMapConfiguration(map);

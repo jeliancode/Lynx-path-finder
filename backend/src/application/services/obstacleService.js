@@ -1,4 +1,5 @@
 import * as obstacleRepository from '../../infrastructure/repositories/obstacleRepository.js';
+import { validateObstacleInsideMap } from '../../utils/validator/insideMapValidator.js';
 
 const validateObstacleData = (data) => {
     if (data.size <= 0) {
@@ -7,13 +8,15 @@ const validateObstacleData = (data) => {
     return data;
 };
 
-export const createObstacle = async (obstacleData) => {
+export const createObstacle = async (map, obstacleData) => {
     const validatedData = validateObstacleData(obstacleData);
+    validateObstacleInsideMap(map)(validatedData);
     return await obstacleRepository.createObstacle(validatedData);
 };
 
-export const createMultipleObstacles = async (obstaclesData) => {
+export const createMultipleObstacles = async (map, obstaclesData) => {
     const validatedData = obstaclesData.map(data => validateObstacleData(data));
+    validateObstacleInsideMap(map)(validatedData);
     return await obstacleRepository.createMultipleObstacles(validatedData);
 };
 

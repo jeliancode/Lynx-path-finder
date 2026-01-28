@@ -1,4 +1,4 @@
-import validateWith from "../validator/validator.js";
+import validateWith from "./validator.js";
 
 const toKey = ({ x, y }) => `${x},${y}`;
 
