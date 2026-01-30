@@ -1,4 +1,5 @@
 import validateWith from './validator.js';
+import { unprocessableEntity } from '../error/httpError.js';
 
 const toKey = ({ x, y }) => `${x},${y}`;
 
@@ -11,7 +12,7 @@ const isBlocked = (obstacleSet) => (point) =>
 const validateNotBlocked = (obstacleSet, label) =>
   validateWith(
     (point) => !isBlocked(obstacleSet)(point),
-    () => new Error(`${label} point is blocked by an obstacle`)
+    () => unprocessableEntity(`${label} point is blocked by an obstacle`)
   );
 
 

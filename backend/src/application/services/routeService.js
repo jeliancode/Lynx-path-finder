@@ -4,6 +4,7 @@ import { buildRouteThroughWaypoints } from '../../utils/pathFinder/routeBuilder.
 import { validateWaypointsReachable } from '../../utils/validator/reachableWaypointValidator.js';
 import { validateMapConfiguration } from '../../utils/validator/mapConfigValidator.js';
 import { validateStartEndPoints } from '../../utils/validator/routePointsValidator.js';
+import { notFoundError } from '../../utils/error/httpError.js';
 
 export const createNewRoute = async (routeData, map) => {
     validateMapConfiguration(map);
@@ -55,7 +56,7 @@ export const fetchAllRoutes = async () => {
 
 export const fetchRouteById = async (id) => {
     const route = await routeRepository.getRouteById(id);
-    if (!route) throw new Error('Route not found');
+    if (!route) notFoundError('Route not found');
     return route;
 };
 

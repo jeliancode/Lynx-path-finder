@@ -11,4 +11,3 @@ export const notFoundError = customError(404);
 export const conflictError = customError(409);
 export const unprocessableEntity = customError(422);
 export const serviceUnavailable = customError(503);
-

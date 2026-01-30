@@ -1,6 +1,6 @@
 import * as waypointService from '../../application/services/waypointService.js'
 
-export const createWaypoint = async (req, res) => {
+export const createWaypoint = async (req, res, next) => {
     try {
         const { name, x, y } = req.body;
         const { mapId } = req.params;
@@ -13,14 +13,11 @@ export const createWaypoint = async (req, res) => {
             data: newWaypoint
         });
     } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
-export const createMultipleWaypoints = async (req, res) => {
+export const createMultipleWaypoints = async (req, res, next) => {
     try {
         const waypointsData = req.body;
         const map = req.map;
@@ -37,14 +34,11 @@ export const createMultipleWaypoints = async (req, res) => {
             data: newWaypoints
         });
     } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
-export const getAllWaypoints = async (req, res) => {
+export const getAllWaypoints = async (req, res, next) => {
     try {
         const waypoints = await waypointService.fetchAllWaypoints();
 
@@ -53,14 +47,11 @@ export const getAllWaypoints = async (req, res) => {
             data: waypoints
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
-export const getWaypointById = async (req, res) => {
+export const getWaypointById = async (req, res, next) => {
     try {
         const { id } = req.params;
         const waypoint = await waypointService.fetchWaypointById(id);
@@ -70,14 +61,11 @@ export const getWaypointById = async (req, res) => {
             data: waypoint
         });
     } catch (error) {
-        res.status(404).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
-export const updateWaypoint = async (req, res) => {
+export const updateWaypoint = async (req, res, next) => {
     try {
         const { id } = req.params;
         const updateData = req.body;
@@ -88,14 +76,11 @@ export const updateWaypoint = async (req, res) => {
             data: updatedWaypoint
         });
     } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
-export const deleteWaypoint = async (req, res) => {
+export const deleteWaypoint = async (req, res, next) => {
     try {
         const { id } = req.params;
         await waypointService.removeWaypointById(id);
@@ -105,9 +90,6 @@ export const deleteWaypoint = async (req, res) => {
             message: 'Waypoint deleted successfully'
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };

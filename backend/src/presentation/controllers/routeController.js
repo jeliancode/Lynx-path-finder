@@ -1,6 +1,6 @@
 import * as routeService from '../../application/services/routeService.js';
 
-export const createRoute = async (req, res) => {
+export const createRoute = async (req, res, next) => {
     try {
         const { startX, startY, endX, endY} = req.body;
         const { mapId } = req.params;
@@ -12,14 +12,11 @@ export const createRoute = async (req, res) => {
             data: newRoute
         });
     } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
-export const validateRouteWaypoints = async (req, res) => {
+export const validateRouteWaypoints = async (req, res, next) => {
     try {
         const { id } = req.params;
         await routeService.validateRouteWaypoints(id);
@@ -29,14 +26,11 @@ export const validateRouteWaypoints = async (req, res) => {
             message: 'Route validation completed'
         });
     } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
-export const getAllRoutes = async (req, res) => {
+export const getAllRoutes = async (req, res, next) => {
     try {
         const routes = await routeService.fetchAllRoutes();
 
@@ -45,14 +39,11 @@ export const getAllRoutes = async (req, res) => {
             data: routes
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
-export const getRouteById = async (req, res) => {
+export const getRouteById = async (req, res, next) => {
     try {
         const { id } = req.params;
         const route = await routeService.fetchRouteById(id);
@@ -62,10 +53,7 @@ export const getRouteById = async (req, res) => {
             data: route
         });
     } catch (error) {
-        res.status(404).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -80,10 +68,7 @@ export const updateRoute = async (req, res) => {
             data: updatedRoute
         });
     } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -97,9 +82,6 @@ export const deleteRoute = async (req, res) => {
             message: 'Route deleted successfully'
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };

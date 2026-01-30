@@ -4,5 +4,5 @@ export const errorHandler = (err, req, res, next) => {
         message: err.message || 'Internal server error'
     }
 
-    res.status(error.status).json({ message: error.message})
+    res.status(error.code).json({ message: error.message})
 }
