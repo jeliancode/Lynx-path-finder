@@ -1,70 +1,56 @@
 import * as mapService from '../../application/services/mapService.js';
+import { createdSuccessfully, completedSuccessfully, deletedSuccessfully } from '../../utils/error/httpSuccess.js';
 
-export const createMap = async (req, res, next) => {
+export const createMap = async (req, res) => {
     try {
         const { name, width, height, userId } = req.body;
         const newMap = await mapService.createNewMap({ name, width, height, userId });
         
-        res.status(201).json({
-            success: true,
-            data: newMap
-        });
+        createdSuccessfully(res)('Map created successfully')(newMap);
     } catch (error) {
         next(error);
     }
 };
 
-export const getAllMaps = async (req, res, next) => {
+export const getAllMaps = async (req, res) => {
     try {
         const maps = await mapService.fetchAllMaps();
         
-        res.status(200).json({
-            success: true,
-            data: maps
-        });
+        completedSuccessfully(res)('All maps get successfully')(maps);
     } catch (error) {
         next(error);
     }
 };
 
-export const getMapById = async (req, res, next) => {
+export const getMapById = async (req, res) => {
     try {
         const { id } = req.params;
         const map = await mapService.fetchMapById(id);
         
-        res.status(200).json({
-            success: true,
-            data: map
-        });
+        completedSuccessfully(res)('Map get successfully')(maps);
     } catch (error) {
         next(error);
     }
 };
 
-export const updateMap = async (req, res, next) => {
+export const updateMap = async (req, res) => {
     try {
         const { id } = req.params;
         const updateData = req.body;
         const updatedMap = await mapService.modifyMapById(id, updateData);
         
-        res.status(200).json({
-            success: true,
-            data: updatedMap
-        });
+        completedSuccessfully(res)('Map updated successfully')(maps);
     } catch (error) {
         next(error);
     }
 };
 
-export const deleteMap = async (req, res, next) => {
+export const deleteMap = async (req, res) => {
     try {
         const { id } = req.params;
         await mapService.removeMapById(id);
         
-        res.status(200).json({
-            success: true,
-            message: 'Map delete succesfully'
-        });
+        deletedSuccessfully(map)('Map deleted successfully');
     } catch (error) {
         next(error);
     }
