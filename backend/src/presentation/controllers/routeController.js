@@ -17,9 +17,10 @@ export const createRoute = async (req, res, next) => {
 export const validateRouteWaypoints = async (req, res, next) => {
     try {
         const { id } = req.params;
-        await routeService.validateRouteWaypoints(id);
+        const map = req.map;
+        await routeService.validateRouteWaypoints(id, map);
 
-        completedSuccessfully(res)('Map waypoints validated successfully');
+        completedSuccessfully(res)('Map waypoints validated successfully')();
     } catch (error) {
         next(error);
     }
@@ -46,7 +47,7 @@ export const getRouteById = async (req, res, next) => {
     }
 };
 
-export const updateRoute = async (req, res) => {
+export const updateRoute = async (req, res, next) => {
     try {
         const { id } = req.params;
         const updateData = req.body;
@@ -58,12 +59,12 @@ export const updateRoute = async (req, res) => {
     }
 };
 
-export const deleteRoute = async (req, res) => {
+export const deleteRoute = async (req, res, next) => {
     try {
         const { id } = req.params;
         await routeService.removeRouteById(id);
 
-        completedSuccessfully(res)('Route deleted successfully');
+        completedSuccessfully(res)('Route deleted successfully')();
     } catch (error) {
         next(error);
     }

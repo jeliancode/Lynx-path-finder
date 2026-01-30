@@ -14,8 +14,8 @@ export const calculateAStarPath = (mapConfig, start, end) => {
 
   const startNode = {
     ...start,
-    costFromStart: 0,
-    estimatedTotal: manhattanDistance(start, end),
+    g: 0,
+    f: manhattanDistance(start, end),
     parent: null
   };
 
@@ -31,7 +31,7 @@ export const calculateAStarPath = (mapConfig, start, end) => {
       const path = reconstructPath(currentNode);
       return {
         path,
-        distance: currentNode.g - 1
+        distance: currentNode.g
       };
     }
 
@@ -75,7 +75,7 @@ export const calculateAStarPath = (mapConfig, start, end) => {
     }
   }
 
-  unprocessableEntityError('No possible route found');
+  throw unprocessableEntityError('No possible route found');
 };
 
 const reconstructPath = (node) => {

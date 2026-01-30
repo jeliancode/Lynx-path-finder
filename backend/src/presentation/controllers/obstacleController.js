@@ -1,7 +1,7 @@
 import * as obstacleService from '../../application/services/obstacleService.js';
 import { createdSuccessfully, completedSuccessfully, deletedSuccessfully } from '../../utils/error/httpSuccess.js';
 
-export const createObstacle = async (req, res) => {
+export const createObstacle = async (req, res, next) => {
     try {
         const { x, y, width, height } = req.body;
         const { mapId } = req.params;
@@ -14,7 +14,7 @@ export const createObstacle = async (req, res) => {
     }
 };
 
-export const createMultipleObstacles = async (req, res) => {
+export const createMultipleObstacles = async (req, res, next) => {
     try {
         const obstaclesData = req.body;
         const map = req.map;
@@ -31,7 +31,7 @@ export const createMultipleObstacles = async (req, res) => {
     }
 };
 
-export const getAllObstacles = async (req, res) => {
+export const getAllObstacles = async (req, res, next) => {
     try {
         const obstacles = await obstacleService.fetchAllObstacles();
 
@@ -41,7 +41,7 @@ export const getAllObstacles = async (req, res) => {
     }
 };
 
-export const getObstacleById = async (req, res) => {
+export const getObstacleById = async (req, res, next) => {
     try {
         const {id} = req.params;
         const obstacle = await obstacleService.fetchObstacleById(id);
@@ -52,7 +52,7 @@ export const getObstacleById = async (req, res) => {
     }
 };
 
-export const updateObstacle = async (req, res) => {
+export const updateObstacle = async (req, res, next) => {
     try {
         const {id} = req.params;
         const updatedObstacle = await obstacleService.modifyObstacleById(id, req.body);
@@ -63,12 +63,12 @@ export const updateObstacle = async (req, res) => {
     }
 };
 
-export const deleteObstacle = async (req, res) => {
+export const deleteObstacle = async (req, res, next) => {
     try {
         const {id} = req.params;
         await obstacleService.removeObstacleById(id);
 
-        deletedSuccessfully(res)('Obstacle deleted successfully')(obstacles);
+        deletedSuccessfully(res)('Obstacle deleted successfully')();
     } catch (error) {
         next(error);
     }

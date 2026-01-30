@@ -1,7 +1,7 @@
 import * as userService from '../../application/services/userService.js';
 import { createdSuccessfully, completedSuccessfully, deletedSuccessfully } from '../../utils/error/httpSuccess.js';
 
-export const createUser = async (req, res) => {
+export const createUser = async (req, res, next) => {
     try {
         const { username, email, password } = req.body;
         const newUser = await userService.createNewUser({ username, email, password });
@@ -12,7 +12,7 @@ export const createUser = async (req, res) => {
     }
 };
 
-export const getAllUsers = async (req, res) => {
+export const getAllUsers = async (req, res, next) => {
     try {
         const users = await userService.fetchAllUsers();
 
@@ -22,7 +22,7 @@ export const getAllUsers = async (req, res) => {
     }
 };
 
-export const getUserById = async (req, res) => {
+export const getUserById = async (req, res, next) => {
     try{
         const {id} = req.params;
         const user = await userService.fetchUserById(id);
@@ -33,7 +33,7 @@ export const getUserById = async (req, res) => {
     }
 };
 
-export const updateUser = async (req, res) => {
+export const updateUser = async (req, res, next) => {
     try{
         const {id} = req.params;
         const updateData = req.body;
@@ -45,7 +45,7 @@ export const updateUser = async (req, res) => {
     }
 }
 
-export const deleteUser = async (req, res) => {
+export const deleteUser = async (req, res, next) => {
     try {
         const {id} = req.params;
         await userService.removeUserById(id);

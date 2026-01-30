@@ -1,5 +1,4 @@
 import * as routeRepository from '../../infrastructure/repositories/routeRepository.js';
-import { fetchMapById } from './mapService.js';
 import { buildRouteThroughWaypoints } from '../../utils/pathFinder/routeBuilder.js';
 import { validateWaypointsReachable } from '../../utils/validator/reachableWaypointValidator.js';
 import { validateMapConfiguration } from '../../utils/validator/mapConfigValidator.js';
@@ -34,16 +33,14 @@ export const createNewRoute = async (routeData, map) => {
     const completeData = {
         ...routeData,
         distance,
-        path
+        path,
     }; 
 
     return await routeRepository.createRoute(completeData);
 };
 
-export const validateRouteWaypoints = async (routeId) => {
+export const validateRouteWaypoints = async (routeId, map) => {
     const route = await routeRepository.getRouteById(routeId);
-    const mapId = route.mapId;
-    const map = await fetchMapById(mapId);
     const waypoints = map.waypoints;
     const path = route.path;
 
