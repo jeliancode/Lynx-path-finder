@@ -1,4 +1,4 @@
-import { unprocessableEntity } from "../error/httpError.js";
+import { unprocessableEntityError } from "../error/httpError.js";
 
 const manhattanDistance = (from, to) =>
   Math.abs(from.x - to.x) + Math.abs(from.y - to.y);
@@ -75,7 +75,7 @@ export const calculateAStarPath = (mapConfig, start, end) => {
     }
   }
 
-  unprocessableEntity('No possible route found');
+  unprocessableEntityError('No possible route found');
 };
 
 const reconstructPath = (node) => {

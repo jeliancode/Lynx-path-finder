@@ -1,5 +1,5 @@
 import validateWith from './validator.js';
-import { unprocessableEntity } from '../error/httpError.js';
+import { unprocessableEntityError } from '../error/httpError.js';
 
 const toKey = ({ x, y }) => `${x},${y}`;
 
@@ -13,7 +13,7 @@ export const validateWaypointsReachable =
   (path) =>
     validateWith(
       (waypoints) => !firstUnreachable(pathToSet(path))(waypoints),
-      () => unprocessableEntity('Some waypoints are not reachable in the given path')
+      () => unprocessableEntityError('Some waypoints are not reachable in the given path')
     );
 
 

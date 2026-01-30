@@ -1,6 +1,6 @@
 import { getMapById } from '../infrastructure/repositories/mapRepository.js';
 import validateWith from '../utils/validator/validator.js';
-import { unprocessableEntity, notFoundError } from '../utils/error/httpError.js'
+import { unprocessableEntityError, notFoundError } from '../utils/error/httpError.js'
 
 const existsMapId = (mapId) => mapId != null;
 const isMapFound = (map) => map != null;
@@ -9,7 +9,7 @@ export const validateMapExists = () => async (req, res, next) => {
   try {
     const { mapId } = req.params;
 
-    validateWith(existsMapId, () => unprocessableEntity('Map ID is required'))(mapId);
+    validateWith(existsMapId, () => unprocessableEntityError('Map ID is required'))(mapId);
 
     const map = await getMapById(mapId);
 

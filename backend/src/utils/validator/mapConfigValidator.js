@@ -1,6 +1,6 @@
 import validateWith  from './validator.js';
 import pipe from '../funtional/pipe.js';
-import { unprocessableEntity } from '../error/httpError.js';
+import { unprocessableEntityError } from '../error/httpError.js';
 
 const hasObstacles = (map) =>
   Array.isArray(map.obstacles) && map.obstacles.length > 0;
@@ -10,6 +10,6 @@ const hasWaypoints = (map) =>
 
 
 export const validateMapConfiguration = pipe(
-  validateWith(hasObstacles, () => unprocessableEntity('Map must contain obstacles')),
-  validateWith(hasWaypoints, () => unprocessableEntity('Map must contain waypoints')),
+  validateWith(hasObstacles, () => unprocessableEntityError('Map must contain obstacles')),
+  validateWith(hasWaypoints, () => unprocessableEntityError('Map must contain waypoints')),
 );

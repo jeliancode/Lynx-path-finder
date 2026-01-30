@@ -1,5 +1,5 @@
 import validateWith from './validator.js';
-import { unprocessableEntity } from '../error/httpError.js';
+import { unprocessableEntityError } from '../error/httpError.js';
 
 const asArray = (value) => Array.isArray(value) ? value : [value];
 
@@ -16,7 +16,7 @@ const entitiesInsideMap =
                 asArray(entities).every(
                     (entity) => isPointInsideMap(map)(getPoint(entity))
                 ),
-                () => unprocessableEntity(errorMessage)
+                () => unprocessableEntityError(errorMessage)
         );
 
 const obstaclePoint = ({ x, y }) => ({ x, y });
