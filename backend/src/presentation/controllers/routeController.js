@@ -1,71 +1,48 @@
 import * as routeService from '../../application/services/routeService.js';
+import { createdSuccessfully, completedSuccessfully, deletedSuccessfully } from '../../utils/error/httpSuccess.js';
 
-export const createRoute = async (req, res) => {
+export const createRoute = async (req, res, next) => {
     try {
         const { startX, startY, endX, endY} = req.body;
         const { mapId } = req.params;
         const map = req.map;
         const newRoute = await routeService.createNewRoute({ mapId, startX, startY, endX, endY }, map);
 
-        res.status(201).json({
-            success: true,
-            data: newRoute
-        });
+        createdSuccessfully(res)('Route created successfully')(newRoute);
     } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
-export const validateRouteWaypoints = async (req, res) => {
+export const validateRouteWaypoints = async (req, res, next) => {
     try {
         const { id } = req.params;
         await routeService.validateRouteWaypoints(id);
 
-        res.status(200).json({
-            success: true,
-            message: 'Route validation completed'
-        });
+        completedSuccessfully(res)('Map waypoints validated successfully');
     } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
-export const getAllRoutes = async (req, res) => {
+export const getAllRoutes = async (req, res, next) => {
     try {
         const routes = await routeService.fetchAllRoutes();
 
-        res.status(200).json({
-            success: true,
-            data: routes
-        });
+        completedSuccessfully(res)('All routes get successfully')(routes);
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
-export const getRouteById = async (req, res) => {
+export const getRouteById = async (req, res, next) => {
     try {
         const { id } = req.params;
         const route = await routeService.fetchRouteById(id);
         
-        res.status(200).json({
-            success: true,
-            data: route
-        });
+        completedSuccessfully(res)('Route get successfully')(route);
     } catch (error) {
-        res.status(404).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -75,15 +52,9 @@ export const updateRoute = async (req, res) => {
         const updateData = req.body;
         const updatedRoute = await routeService.modifyRouteById(id, updateData);
     
-        res.status(200).json({
-            success: true,
-            data: updatedRoute
-        });
+        completedSuccessfully(res)('Route updated successfully')(updatedRoute);
     } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -92,14 +63,8 @@ export const deleteRoute = async (req, res) => {
         const { id } = req.params;
         await routeService.removeRouteById(id);
 
-        res.status(200).json({
-            success: true,
-            message: 'Route deleted successfully'
-        });
+        completedSuccessfully(res)('Route deleted successfully');
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };

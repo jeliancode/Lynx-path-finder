@@ -1,6 +1,7 @@
 import * as obstacleRepository from '../../infrastructure/repositories/obstacleRepository.js';
 import { validateObstacleInsideMap } from '../../utils/validator/insideMapValidator.js';
 import { validateObstacleData } from '../../utils/validator/entityDataValidator.js';
+import { notFoundError } from '../../utils/error/httpError.js';
 
 export const createObstacle = async (map, obstacleData) => {
     validateObstacleData(obstacleData);
@@ -20,7 +21,7 @@ export const fetchAllObstacles = async () => {
 
 export const fetchObstacleById = async (id) => {
     const obstacle = await obstacleRepository.getObstacleById(id);
-    if (!obstacle) throw new Error('Obstacle not found');
+    if (!obstacle) notFoundError('Obstacle not found');
     return obstacle;
 };
 

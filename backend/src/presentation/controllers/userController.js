@@ -1,34 +1,24 @@
 import * as userService from '../../application/services/userService.js';
+import { createdSuccessfully, completedSuccessfully, deletedSuccessfully } from '../../utils/error/httpSuccess.js';
 
 export const createUser = async (req, res) => {
     try {
         const { username, email, password } = req.body;
         const newUser = await userService.createNewUser({ username, email, password });
         
-        res.status(201).json({
-            success: true,
-            data: newUser
-        });
+        createdSuccessfully(res)('User created successfully')(newUser);
     } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
 export const getAllUsers = async (req, res) => {
     try {
         const users = await userService.fetchAllUsers();
-        res.status(200).json({
-            success: true,
-            data: users
-        });
+
+        completedSuccessfully(res)('All users get successfully')(users);
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -37,15 +27,9 @@ export const getUserById = async (req, res) => {
         const {id} = req.params;
         const user = await userService.fetchUserById(id);
 
-        res.status(200).json({
-            success: true,
-            data: user
-        });
+        completedSuccessfully(res)("User get successfully")(user);
     } catch (error) {
-        res.status(404).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -55,15 +39,9 @@ export const updateUser = async (req, res) => {
         const updateData = req.body;
         const updatedUser = await userService.modifyUserById(id, updateData);
 
-        res.status(200).json({
-            success: true,
-            data: updatedUser
-        });
+        completedSuccessfully(res)('User updated successfully')(updatedUser);
     } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 }
 
@@ -72,14 +50,8 @@ export const deleteUser = async (req, res) => {
         const {id} = req.params;
         await userService.removeUserById(id);
 
-        res.status(200).json({
-            success: true,
-            message: 'User deleted sucessfully'
-        });
+        deletedSuccessfully(res)('User deleted successfully');
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };

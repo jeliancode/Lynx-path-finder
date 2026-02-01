@@ -1,6 +1,7 @@
 import * as waypointRepository from '../../infrastructure/repositories/waypointRepository.js';
 import { validateWaypointsInsideMap } from '../../utils/validator/insideMapValidator.js';
 import { validateWaypointData } from '../../utils/validator/entityDataValidator.js';
+import { notFoundError } from '../../utils/error/httpError.js';
 
 export const createNewWaypoint = async (map, waypointData) => {
     validateWaypointData(waypointData);
@@ -20,7 +21,7 @@ export const fetchAllWaypoints = async () => {
 
 export const fetchWaypointById = async (id) => {
     const waypoint = await waypointRepository.getWaypointById(id);
-    if (!waypoint) throw new Error('Waypoint not found');
+    if (!waypoint) notFoundError('Waypoint not found');
     return waypoint;
 };
 

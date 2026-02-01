@@ -1,5 +1,6 @@
 import * as mapRepository from '../../infrastructure/repositories/mapRepository.js';
 import { validateMapData } from '../../utils/validator/entityDataValidator.js';
+import { notFoundError } from '../../utils/error/httpError.js'
 
 export const createNewMap = async (mapData) => {
     validateMapData(mapData);
@@ -12,7 +13,7 @@ export const fetchAllMaps = async () => {
 
 export const fetchMapById = async (id) => {
     const map = await mapRepository.getMapById(id);
-    if (!map) throw new Error('Map not found');
+    if (!map) notFoundError('Map not found');
     return map;
 };
 
