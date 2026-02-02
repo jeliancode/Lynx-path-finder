@@ -21,7 +21,7 @@ export const fetchAllObstacles = async () => {
 
 export const fetchObstacleById = async (id) => {
     const obstacle = await obstacleRepository.getObstacleById(id);
-    if (!obstacle) notFoundError('Obstacle not found');
+    if (!obstacle) throw notFoundError('Obstacle not found');
     return obstacle;
 };
 

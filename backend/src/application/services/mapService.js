@@ -13,7 +13,7 @@ export const fetchAllMaps = async () => {
 
 export const fetchMapById = async (id) => {
     const map = await mapRepository.getMapById(id);
-    if (!map) notFoundError('Map not found');
+    if (!map) throw notFoundError('Map not found');
     return map;
 };
 
