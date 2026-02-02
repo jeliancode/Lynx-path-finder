@@ -51,7 +51,8 @@ export const updateRoute = async (req, res, next) => {
     try {
         const { id } = req.params;
         const updateData = req.body;
-        const updatedRoute = await routeService.modifyRouteById(id, updateData);
+        const map = req.map;
+        const updatedRoute = await routeService.modifyRouteById(id, updateData, map);
     
         completedSuccessfully(res)('Route updated successfully')(updatedRoute);
     } catch (error) {
