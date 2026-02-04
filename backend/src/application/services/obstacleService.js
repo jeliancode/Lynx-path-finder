@@ -3,7 +3,7 @@ import { validateObstacleInsideMap } from '../../utils/validator/insideMapValida
 import { validateObstacleData } from '../../utils/validator/entityDataValidator.js';
 import { notFoundError } from '../../utils/error/httpError.js';
 
-export const createObstacle = async (map, obstacleData) => {
+export const createNewObstacle = async (map, obstacleData) => {
     validateObstacleData(obstacleData);
     validateObstacleInsideMap(map)(obstacleData);
     return await obstacleRepository.createObstacle(obstacleData);

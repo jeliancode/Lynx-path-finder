@@ -1,6 +1,4 @@
-import { jest } from '@jest/globals';
-
-jest.unstable_mockModule(
+jest.mock(
   '../../infrastructure/repositories/mapRepository.js',
   () => ({
     createMap: jest.fn(),
@@ -11,14 +9,23 @@ jest.unstable_mockModule(
   })
 );
 
-const mapRepository = await import('../../infrastructure/repositories/mapRepository.js');
-const {
+jest.mock(
+  '../../utils/validator/entityDataValidator.js',
+  () => ({
+    validateMapData: jest.fn()
+  })
+);
+
+import {
   createNewMap,
   fetchAllMaps,
   fetchMapById,
   modifyMapById,
   removeMapById
-} = await import('../services/mapService.js');
+} from '../services/mapService.js';
+
+import * as mapRepository from '../../infrastructure/repositories/mapRepository.js';
+import { validateMapData } from '../../utils/validator/entityDataValidator.js';
 
 describe('Map Service', () => {
 
@@ -27,29 +34,37 @@ describe('Map Service', () => {
   });
 
   describe('createNewMap', () => {
-    it('debería crear un mapa con datos válidos', async () => {
-      const mapData = { name: 'Mapa 1', width: 10, height: 10 };
+    it('Should validate data and create a new map', async () => {
+      const mapData = { name: 'Mapa 1', width: 10, height: 10, userId: '1' };
       const createdMap = { id: '1', ...mapData };
 
+      validateMapData.mockReturnValue(undefined);
       mapRepository.createMap.mockResolvedValue(createdMap);
 
       const result = await createNewMap(mapData);
 
+      expect(validateMapData).toHaveBeenCalledWith(mapData);
       expect(mapRepository.createMap).toHaveBeenCalledWith(mapData);
       expect(result).toEqual(createdMap);
     });
 
-    it('debería lanzar error si los datos son inválidos', async () => {
-      const invalidData = { name: '', width: 0, height: 10 };
+    it('Should throw error if validator throws', async () => {
+      const invalidData = { name: '', width: 0 };
+
+      validateMapData.mockImplementation(() => {
+        throw new Error('Invalid map data');
+      });
 
       await expect(createNewMap(invalidData))
         .rejects
-        .toThrow('Datos de mapa inválidos');
+        .toThrow('Invalid map data');
+
+      expect(mapRepository.createMap).not.toHaveBeenCalled();
     });
   });
 
   describe('fetchAllMaps', () => {
-    it('debería devolver todos los mapas', async () => {
+    it('Should return all maps', async () => {
       const maps = [{ id: '1', name: 'Mapa A' }];
 
       mapRepository.getAllMaps.mockResolvedValue(maps);
@@ -62,7 +77,7 @@ describe('Map Service', () => {
   });
 
   describe('fetchMapById', () => {
-    it('debería devolver un mapa si existe', async () => {
+    it('Should return map if exists', async () => {
       const map = { id: '1', name: 'Mapa X' };
 
       mapRepository.getMapById.mockResolvedValue(map);
@@ -73,18 +88,18 @@ describe('Map Service', () => {
       expect(result).toEqual(map);
     });
 
-    it('debería lanzar error si el mapa no existe', async () => {
+    it('Should throw error if map does not exist', async () => {
       mapRepository.getMapById.mockResolvedValue(null);
 
       await expect(fetchMapById('999'))
         .rejects
-        .toThrow('Mapa no encontrado');
+        .toThrow('Map not found');
     });
   });
 
   describe('modifyMapById', () => {
-    it('debería actualizar un mapa con datos válidos', async () => {
-      const updateData = { name: 'Nuevo', width: 5, height: 5 };
+    it('Should update map', async () => {
+      const updateData = { name: 'Nuevo' };
       const updatedMap = { id: '1', ...updateData };
 
       mapRepository.updateMapById.mockResolvedValue(updatedMap);
@@ -98,7 +113,7 @@ describe('Map Service', () => {
   });
 
   describe('removeMapById', () => {
-    it('debería eliminar un mapa', async () => {
+    it('Should delete map', async () => {
       mapRepository.deleteMapById.mockResolvedValue(true);
 
       const result = await removeMapById('1');
