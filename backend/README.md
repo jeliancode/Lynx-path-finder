@@ -107,3 +107,10 @@ Si la base de datos ya existe solo se debe realizar la generacion del cliente y 
 ```bash
 npx prisma db push
 ```
+### Testing
+
+```bash
+npm install --save-dev jest @jest/globals
+```
+
+

@@ -57,7 +57,7 @@ export const fetchRouteById = async (id) => {
 
 export const modifyRouteById = async (id, updateData, map) => {
     const existingRoute = await routeRepository.getRouteById(id);
-    if (!existingRoute) notFoundError('Route not found');
+    if (!existingRoute) throw notFoundError('Route not found');
 
     validateMapConfiguration(map);
 

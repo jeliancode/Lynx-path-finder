@@ -21,7 +21,7 @@ export const fetchAllWaypoints = async () => {
 
 export const fetchWaypointById = async (id) => {
     const waypoint = await waypointRepository.getWaypointById(id);
-    if (!waypoint) notFoundError('Waypoint not found');
+    if (!waypoint) throw notFoundError('Waypoint not found');
     return waypoint;
 };
 

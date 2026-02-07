@@ -50,7 +50,7 @@ export const deleteUser = async (req, res, next) => {
         const {id} = req.params;
         await userService.removeUserById(id);
 
-        deletedSuccessfully(res)('User deleted successfully');
+        deletedSuccessfully(res)('User deleted successfully')();
     } catch (error) {
         next(error);
     }
