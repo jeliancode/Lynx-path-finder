@@ -6,7 +6,7 @@ export const createObstacle = async (req, res, next) => {
         const { x, y, width, height } = req.body;
         const { mapId } = req.params;
         const map = req.map;
-        const newObstacle = await obstacleService.createObstacle(map, { x, y, width, height, mapId });
+        const newObstacle = await obstacleService.createNewObstacle(map, { x, y, width, height, mapId });
 
         createdSuccessfully(res)('Obstacle created successfully')(newObstacle);
     } catch (error) {
