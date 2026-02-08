@@ -84,5 +84,4 @@ describe('A* Pathfinding Algorithm', () => {
 
     expect(result.path.length).toBe(result.distance + 1);
   });
-
 });
