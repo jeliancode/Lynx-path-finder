@@ -52,7 +52,9 @@ export const fetchAllRoutes = async () => {
 };
 
 export const fetchRouteById = async (id) => { 
-    return await routeRepository.getRouteById(id);
+    const route = await routeRepository.getRouteById(id);
+    if (!route) throw notFoundError('Route not found');
+    return route;
 };
 
 export const modifyRouteById = async (id, updateData, map) => {
