@@ -1,5 +1,5 @@
 import express from 'express';
-import * as mapController from '../controllers/mapsController.js';
+import * as mapController from '../controllers/mapController.js';
 
 const router = express.Router({ mergeParams: true });
 router
