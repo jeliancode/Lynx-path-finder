@@ -115,6 +115,8 @@ npm install --save-dev jest @jest/globals
 
 ## Monads
 
+Se decidio aplicar monads en lugar de functoes porque los monads permiten encadenar operaciones que pueden fallar, como validaciones o llamados a repositorios, esta implementacion perminet un flujo de ejecucion claro. A diferencia de los functoes los monads permiten aplanar resultados con "chain".
+
 Implementacion de monad result:
 ```js
 const Result = (isOk, value) => ({
