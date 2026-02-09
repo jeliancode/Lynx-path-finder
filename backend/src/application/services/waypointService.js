@@ -17,9 +17,17 @@ export const createNewWaypoint = (map, waypointData) =>
 
 export const createMultipleWaypoints = (map, waypointsData) =>
   pipe(
-    (data) => Ok(data.map(validateWaypointData)), 
+    (waypoints) => waypoints.reduce(
+      (acc, waypoint) =>
+        ResultMonad.chain(() =>
+          ResultMonad.map(() => waypoints)(validateWaypointData(waypoint))
+        )(acc),
+        Ok(waypoints)
+    ),
     validateWaypointsInsideMap(map),
-    (data) => fromPromise(() => waypointRepository.createMultipleWaypoints(data))
+    (data) => fromPromise(() => 
+      waypointRepository.createMultipleWaypoints(data)
+    )
   )(waypointsData);
 
 export const fetchAllWaypoints = () => 

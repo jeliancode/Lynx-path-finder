@@ -19,9 +19,15 @@ export const createNewObstacle = (map, obstacleData) =>
 
 export const createMultipleObstacles = (map, obstaclesData) =>
   pipe(
-    (data) => Ok(data.map(validateObstacleData)), 
+    (obstacles) => obstacles.reduce(
+      (acc, obstacle) => 
+        ResultMonad.chain(() => 
+          ResultMonad.map(() => obstacles)(validateObstacleData(obstacle))
+        )(acc),
+      Ok(obstacles)
+    ),
     validateObstacleInsideMap(map),
-    (data) => fromPromise(() => 
+    (data) => fromPromise(() =>
       obstacleRepository.createMultipleObstacles(data)
     )
   )(obstaclesData);
