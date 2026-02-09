@@ -1,57 +1,53 @@
 import * as mapService from '../../application/services/mapService.js';
+import { ResultMonad } from '../../utils/funtional/monad.js';
 import { createdSuccessfully, completedSuccessfully, deletedSuccessfully } from '../../utils/error/httpSuccess.js';
 
 export const createMap = async (req, res, next) => {
-    try {
-        const { name, width, height, userId } = req.body;
-        const newMap = await mapService.createNewMap({ name, width, height, userId });
-        
-        createdSuccessfully(res)('Map created successfully')(newMap);
-    } catch (error) {
-        next(error);
-    }
+    const { name, width, height, userId } = req.body;
+    const creationResult = await mapService.createNewMap({ name, width, height, userId });
+
+    ResultMonad.fold(
+        (error) => next(error),
+        (map) =>createdSuccessfully(res)('Map created successfully')(map)
+    )(creationResult);       
 };
 
 export const getAllMaps = async (req, res, next) => {
-    try {
-        const maps = await mapService.fetchAllMaps();
-        
-        completedSuccessfully(res)('All maps get successfully')(maps);
-    } catch (error) {
-        next(error);
-    }
+    const getResult = await mapService.fetchAllMaps();
+    
+    ResultMonad.fold(
+        (error) => next(error),
+        (maps) => completedSuccessfully(res)('All maps get successfully')(maps)
+    )(getResult);
 };
 
 export const getMapById = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const map = await mapService.fetchMapById(id);
-        
-        completedSuccessfully(res)('Map get successfully')(map);
-    } catch (error) {
-        next(error);
-    }
+    const { id } = req.params;
+    const getResult = await mapService.fetchMapById(id);
+
+    ResultMonad.fold(
+        (error) => next(error),
+        (map) => completedSuccessfully(res)('Map get successfully')(map)
+    )(getResult);
 };
 
 export const updateMap = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const updateData = req.body;
-        const updatedMap = await mapService.modifyMapById(id, updateData);
+    const { id } = req.params;
+    const updateData = req.body;
+    const updatedResult = await mapService.modifyMapById(id, updateData);
         
-        completedSuccessfully(res)('Map updated successfully')(updatedMap);
-    } catch (error) {
-        next(error);
-    }
+    ResultMonad.fold(
+        (error) => next(error),
+        (updatedMap) =>completedSuccessfully(res)('Map updated successfully')(updatedMap)
+    )(updatedResult);
 };
 
 export const deleteMap = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        await mapService.removeMapById(id);
-        
-        deletedSuccessfully(res)('Map deleted successfully')();
-    } catch (error) {
-        next(error);
-    }
+    const { id } = req.params;
+    const deleteResult = await mapService.removeMapById(id);
+
+    ResultMonad.fold(
+        (error) => next(error),
+        () => deletedSuccessfully(res)('Map deleted successfully')()
+    )(deleteResult);
 };

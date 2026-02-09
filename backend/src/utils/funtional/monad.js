@@ -1,11 +1,11 @@
 const Result = (isOk, value) => ({
   isOk,
-  isErr: !isOk,
+  isError: !isOk,
   value
 });
 
 export const Ok = (value) => Result(true, value);
-export const Err = (error) => Result(false, error);
+export const Error = (error) => Result(false, error);
 
 const map = (fn) => (result) =>
   result.isOk
@@ -17,15 +17,23 @@ const chain = (fn) => (result) =>
     ? fn(result.value)
     : result;
 
-const fold = (onErr, onOk) => (result) =>
+const fold = (onError, onOk) => (result) =>
   result.isOk
     ? onOk(result.value)
-    : onErr(result.value);
+    : onError(result.value);
 
 export const ResultMonad = {
   Ok,
-  Err,
+  Error: Error,
   map,
   chain,
   fold
+};
+
+export const fromPromise = async (fn) => {
+  try {
+    return Ok(await fn());
+  } catch (error) {
+    return Error(error);
+  }
 };

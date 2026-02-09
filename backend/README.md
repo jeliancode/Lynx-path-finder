@@ -113,4 +113,51 @@ npx prisma db push
 npm install --save-dev jest @jest/globals
 ```
 
+## Monads
 
+Implementacion de monad result:
+```js
+const Result = (isOk, value) => ({
+  isOk,
+  isError: !isOk,
+  value
+});
+
+export const Ok = (value) => Result(true, value);
+export const Error = (error) => Result(false, error);
+
+const map = (fn) => (result) =>
+  result.isOk
+    ? Ok(fn(result.value))
+    : result;
+
+const chain = (fn) => (result) =>
+  result.isOk
+    ? fn(result.value)
+    : result;
+
+const fold = (onError, onOk) => (result) =>
+  result.isOk
+    ? onOk(result.value)
+    : onError(result.value);
+
+export const ResultMonad = {
+  Ok,
+  Error: Error,
+  map,
+  chain,
+  fold
+};
+
+export const fromPromise = async (fn) => {
+  try {
+    return Ok(await fn());
+  } catch (error) {
+    return Error(error);
+  }
+};
+```
+- Result: Guarda un valor y le asigna una etiqueta dependiendo si todo se proceso con exito o hubo algun error.
+- map y chain: son las que deciden si una funcion se ejecuta o no, si se tiene la etiqueta de "ok" se aplica la funcion al valor y genera un nuevo resultado,  por el contrario si existe un error se ignora.
+- fold: saca el valor de la "caja" para eso hay que definir 2 caminos, que hacer en caso de error y que hacer en caso de success.
+- fromPromise: encapsula las operaciones try catch en un solo lugar y se encarga de convertir opreaciones asinconas basadas en promesas.
