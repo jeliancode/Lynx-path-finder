@@ -25,8 +25,10 @@ import {
 import * as routeService from '../../application/services/routeService.js';
 import {
   createdSuccessfully,
-  completedSuccessfully
+  completedSuccessfully,
+  deletedSuccessfully
 } from '../../utils/error/httpSuccess.js';
+import { Ok, Error } from '../../utils/funtional/monad.js';
 
 const mockRes = () => ({});
 const mockNext = jest.fn();
@@ -48,7 +50,7 @@ describe('Route Controller', () => {
 
       const createdRoute = { id: '1', ...req.body, mapId: 'map-1' };
 
-      routeService.createNewRoute.mockResolvedValue(createdRoute);
+      routeService.createNewRoute.mockResolvedValue(Ok(createdRoute));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -71,7 +73,7 @@ describe('Route Controller', () => {
       const req = { body: {}, params: {}, map: {} };
       const res = mockRes();
 
-      routeService.createNewRoute.mockRejectedValue(error);
+      routeService.createNewRoute.mockResolvedValue(Error(error));
 
       await createRoute(req, res, mockNext);
 
@@ -87,7 +89,7 @@ describe('Route Controller', () => {
       };
       const res = mockRes();
 
-      routeService.validateRouteWaypoints.mockResolvedValue();
+      routeService.validateRouteWaypoints.mockResolvedValue(Ok());
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -107,7 +109,7 @@ describe('Route Controller', () => {
       const res = mockRes();
       const routes = [{ id: '1' }, { id: '2' }];
 
-      routeService.fetchAllRoutes.mockResolvedValue(routes);
+      routeService.fetchAllRoutes.mockResolvedValue(Ok(routes));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -127,7 +129,7 @@ describe('Route Controller', () => {
       const res = mockRes();
       const route = { id: '1' };
 
-      routeService.fetchRouteById.mockResolvedValue(route);
+      routeService.fetchRouteById.mockResolvedValue(Ok(route));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -151,7 +153,7 @@ describe('Route Controller', () => {
       const res = mockRes();
       const updatedRoute = { id: '1', ...req.body };
 
-      routeService.modifyRouteById.mockResolvedValue(updatedRoute);
+      routeService.modifyRouteById.mockResolvedValue(Ok(updatedRoute));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -170,11 +172,11 @@ describe('Route Controller', () => {
       const req = { params: { id: '1' } };
       const res = mockRes();
 
-      routeService.removeRouteById.mockResolvedValue(true);
+      routeService.removeRouteById.mockResolvedValue(Ok(true));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
-      completedSuccessfully.mockReturnValue(messageFn);
+      deletedSuccessfully.mockReturnValue(messageFn);
 
       await deleteRoute(req, res, mockNext);
 

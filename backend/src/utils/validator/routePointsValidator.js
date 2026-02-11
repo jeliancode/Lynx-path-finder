@@ -1,5 +1,6 @@
 import validateWith from './validator.js';
 import { unprocessableEntityError } from '../error/httpError.js';
+import { ResultMonad, Ok } from '../funtional/monad.js';
 
 const toKey = ({ x, y }) => `${x},${y}`;
 
@@ -22,8 +23,11 @@ export const validateStartEndPoints =
   end => {
     const obstacleSet = obstacleSetFrom(obstacles);
 
-    validateNotBlocked(obstacleSet, 'Start')(start);
-    validateNotBlocked(obstacleSet, 'Destiny')(end);
-
-    return { start, end };
+    return ResultMonad.chain(() =>
+      ResultMonad.map(() => ({ start, end }))(
+        validateNotBlocked(obstacleSet, 'Destiny')(end)
+      )
+    )(
+      validateNotBlocked(obstacleSet, 'Start')(start)
+    );
   };

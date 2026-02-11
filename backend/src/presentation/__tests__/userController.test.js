@@ -26,6 +26,7 @@ import {
   completedSuccessfully,
   deletedSuccessfully
 } from '../../utils/error/httpSuccess.js';
+import { Ok, Error } from '../../utils/funtional/monad.js';
 
 const mockRes = () => ({});
 const mockNext = jest.fn();
@@ -49,7 +50,7 @@ describe('User Controller', () => {
 
       const createdUser = { id: '1', ...req.body };
 
-      userService.createNewUser.mockResolvedValue(createdUser);
+      userService.createNewUser.mockResolvedValue(Ok(createdUser));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -69,7 +70,7 @@ describe('User Controller', () => {
       const req = { body: {} };
       const res = mockRes();
 
-      userService.createNewUser.mockRejectedValue(error);
+      userService.createNewUser.mockResolvedValue(Error(error));
 
       await createUser(req, res, mockNext);
 
@@ -83,7 +84,7 @@ describe('User Controller', () => {
       const res = mockRes();
       const users = [{ id: '1' }, { id: '2' }];
 
-      userService.fetchAllUsers.mockResolvedValue(users);
+      userService.fetchAllUsers.mockResolvedValue(Ok(users));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -104,7 +105,7 @@ describe('User Controller', () => {
       const res = mockRes();
       const user = { id: '1', username: 'jesus' };
 
-      userService.fetchUserById.mockResolvedValue(user);
+      userService.fetchUserById.mockResolvedValue(Ok(user));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -127,7 +128,7 @@ describe('User Controller', () => {
       const res = mockRes();
       const updatedUser = { id: '1', ...req.body };
 
-      userService.modifyUserById.mockResolvedValue(updatedUser);
+      userService.modifyUserById.mockResolvedValue(Ok(updatedUser));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -146,7 +147,7 @@ describe('User Controller', () => {
       const req = { params: { id: '1' } };
       const res = mockRes();
 
-      userService.removeUserById.mockResolvedValue(true);
+      userService.removeUserById.mockResolvedValue(Ok(true));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);

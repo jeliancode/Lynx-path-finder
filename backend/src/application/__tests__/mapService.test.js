@@ -26,6 +26,7 @@ import {
 
 import * as mapRepository from '../../infrastructure/repositories/mapRepository.js';
 import { validateMapData } from '../../utils/validator/entityDataValidator.js';
+import { Ok, Error } from '../../utils/funtional/monad.js'
 
 describe('Map Service', () => {
 
@@ -33,94 +34,98 @@ describe('Map Service', () => {
     jest.clearAllMocks();
   });
 
-  describe('createNewMap', () => {
-    it('Should validate data and create a new map', async () => {
-      const mapData = { name: 'Mapa 1', width: 10, height: 10, userId: '1' };
-      const createdMap = { id: '1', ...mapData };
+  it('Should return Ok with created map', async () => {
+    const mapData = { name: 'Mapa 1', width: 30, height: 30, userId: 'user1' };
+    const createdMap = { id: '1', ...mapData };
 
-      validateMapData.mockReturnValue(undefined);
-      mapRepository.createMap.mockResolvedValue(createdMap);
+    validateMapData.mockReturnValue(Ok(mapData));
+    mapRepository.createMap.mockResolvedValue(createdMap);
 
-      const result = await createNewMap(mapData);
+    const result = await createNewMap(mapData);
 
-      expect(validateMapData).toHaveBeenCalledWith(mapData);
-      expect(mapRepository.createMap).toHaveBeenCalledWith(mapData);
-      expect(result).toEqual(createdMap);
-    });
+    expect(validateMapData).toHaveBeenCalledWith(mapData);
+    expect(mapRepository.createMap).toHaveBeenCalledWith(mapData);
 
-    it('Should throw error if validator throws', async () => {
-      const invalidData = { name: '', width: 0 };
-
-      validateMapData.mockImplementation(() => {
-        throw new Error('Invalid map data');
-      });
-
-      await expect(createNewMap(invalidData))
-        .rejects
-        .toThrow('Invalid map data');
-
-      expect(mapRepository.createMap).not.toHaveBeenCalled();
-    });
+    expect(result.isOk).toBe(true);
+    expect(result.value).toEqual(createdMap);
   });
 
+
   describe('fetchAllMaps', () => {
-    it('Should return all maps', async () => {
-      const maps = [{ id: '1', name: 'Mapa A' }];
+    it('Should return Ok with all maps', async () => {
+      const maps = [{ id: '1' }];
 
       mapRepository.getAllMaps.mockResolvedValue(maps);
 
       const result = await fetchAllMaps();
 
-      expect(mapRepository.getAllMaps).toHaveBeenCalled();
-      expect(result).toEqual(maps);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(maps);
     });
   });
 
   describe('fetchMapById', () => {
-    it('Should return map if exists', async () => {
-      const map = { id: '1', name: 'Mapa X' };
+    it('Should return Ok when map exists', async () => {
+      const map = { id: '1' };
 
       mapRepository.getMapById.mockResolvedValue(map);
 
       const result = await fetchMapById('1');
 
-      expect(mapRepository.getMapById).toHaveBeenCalledWith('1');
-      expect(result).toEqual(map);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(map);
     });
 
-    it('Should throw error if map does not exist', async () => {
+    it('returns Error when map does not exist', async () => {
       mapRepository.getMapById.mockResolvedValue(null);
 
-      await expect(fetchMapById('999'))
-        .rejects
-        .toThrow('Map not found');
+      const result = await fetchMapById('999');
+
+      expect(result.isError).toBe(true);
+      expect(result.value.message).toBe('Map not found');
     });
   });
 
   describe('modifyMapById', () => {
-    it('Should update map', async () => {
-      const updateData = { name: 'Nuevo' };
-      const updatedMap = { id: '1', ...updateData };
+    it('returns Ok when map is updated', async () => {
+      const updated = { id: '1', name: 'Nuevo' };
 
-      mapRepository.updateMapById.mockResolvedValue(updatedMap);
+      mapRepository.updateMapById.mockResolvedValue(updated);
 
-      const result = await modifyMapById('1', updateData);
+      const result = await modifyMapById('1', { name: 'Nuevo' });
 
-      expect(mapRepository.updateMapById)
-        .toHaveBeenCalledWith('1', updateData);
-      expect(result).toEqual(updatedMap);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(updated);
+    });
+
+    it('returns Error when map to update does not exist', async () => {
+      mapRepository.updateMapById.mockResolvedValue(null);
+
+      const result = await modifyMapById('1', {});
+
+      expect(result.isError).toBe(true);
+      expect(result.value.message).toBe('Map to update not found');
     });
   });
 
   describe('removeMapById', () => {
-    it('Should delete map', async () => {
+    it('returns Ok when map is deleted', async () => {
       mapRepository.deleteMapById.mockResolvedValue(true);
 
       const result = await removeMapById('1');
 
-      expect(mapRepository.deleteMapById)
-        .toHaveBeenCalledWith('1');
-      expect(result).toBe(true);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toBe(true);
     });
+
+    it('returns Error when map to delete does not exist', async () => {
+      mapRepository.deleteMapById.mockResolvedValue(null);
+
+      const result = await removeMapById('1');
+
+      expect(result.isError).toBe(true);
+      expect(result.value.message).toBe('Map to delete not found');
+    });
+
   });
 });

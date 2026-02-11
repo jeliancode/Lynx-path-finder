@@ -62,6 +62,6 @@ export const deleteRoute = async (req, res, next) => {
 
     ResultMonad.fold(
         (error) => next(error),
-        () => completedSuccessfully(res)('Route deleted successfully')()
+        () => deletedSuccessfully(res)('Route deleted successfully')()
     )(deleteResult);
 };

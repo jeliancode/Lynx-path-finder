@@ -1,8 +1,8 @@
-jest.mock('../../infrastructure/repositories/mapRepository.js');
-
 import { validateMapExists } from '../validateMapExists.js';
-import { getMapById } from '../../infrastructure/repositories/mapRepository.js';
+import * as mapRepository from '../../infrastructure/repositories/mapRepository.js';
 import { unprocessableEntityError, notFoundError } from '../../utils/error/httpError.js';
+
+jest.mock('../../infrastructure/repositories/mapRepository.js');
 
 const buildReq = (overrides = {}) => ({
   params: {},
@@ -16,68 +16,56 @@ describe('validateMapExists middleware', () => {
     jest.clearAllMocks();
   });
 
-  test('should return 422 if mapId is missing', async () => {
-    const req = buildReq();
+  test('should call next with 422 if mapId is missing', async () => {
+    const req = buildReq({ params: { mapId: null } });
     const res = {};
     const next = buildNext();
 
     const middleware = validateMapExists();
-
     await middleware(req, res, next);
 
-    expect(next).toHaveBeenCalledTimes(1);
     expect(next).toHaveBeenCalledWith(unprocessableEntityError('Map ID is required'));
+    expect(mapRepository.getMapById).not.toHaveBeenCalled();
   });
 
-  test('should return 404 if map is not found', async () => {
-    const req = buildReq({
-      params: { mapId: 'map-123' }
-    });
+  test('should call next with 404 if map is not found in database', async () => {
+    const req = buildReq({ params: { mapId: 'map-123' } });
     const res = {};
     const next = buildNext();
 
-    getMapById.mockResolvedValue(null);
+    mapRepository.getMapById.mockResolvedValue(null);
 
     const middleware = validateMapExists();
-
     await middleware(req, res, next);
 
-    expect(getMapById).toHaveBeenCalledWith('map-123');
+    expect(mapRepository.getMapById).toHaveBeenCalledWith('map-123');
     expect(next).toHaveBeenCalledWith(notFoundError('Map not found'));
   });
 
-  test('should attach map to req and call next if map exists', async () => {
+  test('should attach map to req and call next() without arguments if map exists', async () => {
     const fakeMap = { id: 'map-123', name: 'Test map' };
-
-    const req = buildReq({
-      params: { mapId: 'map-123' }
-    });
+    const req = buildReq({ params: { mapId: 'map-123' } });
     const res = {};
     const next = buildNext();
 
-    getMapById.mockResolvedValue(fakeMap);
+    mapRepository.getMapById.mockResolvedValue(fakeMap);
 
     const middleware = validateMapExists();
-
     await middleware(req, res, next);
 
     expect(req.map).toEqual(fakeMap);
     expect(next).toHaveBeenCalledWith();
   });
 
-  test('should forward unexpected errors to next', async () => {
-    const dbError = new Error('DB crashed');
-
-    const req = buildReq({
-      params: { mapId: 'map-123' }
-    });
+  test('should forward exceptions captured by fromPromise to next', async () => {
+    const dbError = new Error('Connection lost');
+    const req = buildReq({ params: { mapId: 'map-123' } });
     const res = {};
     const next = buildNext();
 
-    getMapById.mockRejectedValue(dbError);
+    mapRepository.getMapById.mockRejectedValue(dbError);
 
     const middleware = validateMapExists();
-
     await middleware(req, res, next);
 
     expect(next).toHaveBeenCalledWith(dbError);

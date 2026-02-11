@@ -25,6 +25,8 @@ import {
   completedSuccessfully,
   deletedSuccessfully
 } from '../../utils/error/httpSuccess.js';
+import { Ok, Error } from '../../utils/funtional/monad.js';
+
 
 const mockRes = () => ({});
 const mockNext = jest.fn();
@@ -44,7 +46,7 @@ describe('Map controller', () => {
 
       const createdMap = { id: '1', ...req.body };
 
-      mapService.createNewMap.mockResolvedValue(createdMap);
+      mapService.createNewMap.mockResolvedValue(Ok(createdMap));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -64,7 +66,7 @@ describe('Map controller', () => {
       const req = { body: {} };
       const res = mockRes();
 
-      mapService.createNewMap.mockRejectedValue(error);
+      mapService.createNewMap.mockResolvedValue(Error(error));
 
       await createMap(req, res, mockNext);
 
@@ -78,7 +80,7 @@ describe('Map controller', () => {
       const res = mockRes();
       const maps = [{ id: '1' }, { id: '2' }];
 
-      mapService.fetchAllMaps.mockResolvedValue(maps);
+      mapService.fetchAllMaps.mockResolvedValue(Ok(maps));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -99,7 +101,7 @@ describe('Map controller', () => {
       const res = mockRes();
       const map = { id: '1' };
 
-      mapService.fetchMapById.mockResolvedValue(map);
+      mapService.fetchMapById.mockResolvedValue(Ok(map));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -121,7 +123,7 @@ describe('Map controller', () => {
       const res = mockRes();
       const updatedMap = { id: '1', ...req.body };
 
-      mapService.modifyMapById.mockResolvedValue(updatedMap);
+      mapService.modifyMapById.mockResolvedValue(Ok(updatedMap));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -139,7 +141,7 @@ describe('Map controller', () => {
       const req = { params: { id: '1' } };
       const res = mockRes();
 
-      mapService.removeMapById.mockResolvedValue(true);
+      mapService.removeMapById.mockResolvedValue(Ok(true));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);

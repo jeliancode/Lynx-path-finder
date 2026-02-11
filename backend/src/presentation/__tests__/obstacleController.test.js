@@ -28,6 +28,7 @@ import {
   completedSuccessfully,
   deletedSuccessfully
 } from '../../utils/error/httpSuccess.js';
+import { Ok, Error } from '../../utils/funtional/monad.js';
 
 const mockRes = () => ({});
 const mockNext = jest.fn();
@@ -49,7 +50,7 @@ describe('Obstacle Controller', () => {
 
       const obstacle = { id: '1', ...req.body, mapId: 'map-1' };
 
-      obstacleService.createNewObstacle.mockResolvedValue(obstacle);
+      obstacleService.createNewObstacle.mockResolvedValue(Ok(obstacle));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -68,7 +69,7 @@ describe('Obstacle Controller', () => {
 
     it('Should throw error if service fails', async () => {
       const error = new Error('Error');
-      obstacleService.createNewObstacle.mockRejectedValue(error);
+      obstacleService.createNewObstacle.mockResolvedValue(Error(error));
 
       const req = { body: {}, params: {}, map: {} };
       const res = mockRes();
@@ -93,7 +94,7 @@ describe('Obstacle Controller', () => {
 
       const obstacles = req.body.map(o => ({ ...o, mapId: 'map-1' }));
 
-      obstacleService.createMultipleObstacles.mockResolvedValue(obstacles);
+      obstacleService.createMultipleObstacles.mockResolvedValue(Ok(obstacles));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -113,7 +114,7 @@ describe('Obstacle Controller', () => {
       const res = mockRes();
       const obstacles = [{ id: '1' }, { id: '2' }];
 
-      obstacleService.fetchAllObstacles.mockResolvedValue(obstacles);
+      obstacleService.fetchAllObstacles.mockResolvedValue(Ok(obstacles));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -133,7 +134,7 @@ describe('Obstacle Controller', () => {
       const res = mockRes();
       const obstacle = { id: '1' };
 
-      obstacleService.fetchObstacleById.mockResolvedValue(obstacle);
+      obstacleService.fetchObstacleById.mockResolvedValue(Ok(obstacle));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -157,7 +158,7 @@ describe('Obstacle Controller', () => {
 
       const updatedObstacle = { id: '1', width: 3 };
 
-      obstacleService.modifyObstacleById.mockResolvedValue(updatedObstacle);
+      obstacleService.modifyObstacleById.mockResolvedValue(Ok(updatedObstacle));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -176,7 +177,7 @@ describe('Obstacle Controller', () => {
       const req = { params: { id: '1' } };
       const res = mockRes();
 
-      obstacleService.removeObstacleById.mockResolvedValue(true);
+      obstacleService.removeObstacleById.mockResolvedValue(Ok(true));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);

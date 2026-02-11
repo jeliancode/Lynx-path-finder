@@ -1,46 +1,58 @@
 import { validateStartEndPoints } from '../validator/routePointsValidator.js';
 import { unprocessableEntityError } from '../error/httpError.js';
+import { Ok, Error as ResultError } from '../funtional/monad.js';
 
 describe('validateStartEndPoints validator', () => {
   const start = { x: 0, y: 0 };
   const end = { x: 4, y: 4 };
 
-  it('should return start and end when both points are not blocked', () => {
+  it('should return Ok({start, end}) when both points are not blocked', () => {
     const obstacles = [{ x: 1, y: 1 }];
 
-    const result = validateStartEndPoints(obstacles)(start)(end);
+    const result =
+      validateStartEndPoints(obstacles)(start)(end);
 
-    expect(result).toEqual({ start, end });
+    expect(result).toEqual(
+      Ok({ start, end })
+    );
   });
 
-  it('should throw error if start point is blocked', () => {
+  it('should return Error if start point is blocked', () => {
     const obstacles = [{ x: 0, y: 0 }];
 
-    const run = () =>
+    const result =
       validateStartEndPoints(obstacles)(start)(end);
 
-    expect(run).toThrow(unprocessableEntityError('Start point is blocked by an obstacle'));
+    expect(result).toEqual(
+      ResultError(
+        unprocessableEntityError('Start point is blocked by an obstacle')
+      )
+    );
   });
 
-  it('should throw error if end point is blocked', () => {
+  it('should return Error if end point is blocked', () => {
     const obstacles = [{ x: 4, y: 4 }];
 
-    const run = () =>
+    const result =
       validateStartEndPoints(obstacles)(start)(end);
 
-    expect(run).toThrow(unprocessableEntityError('Destiny point is blocked by an obstacle'));
+    expect(result).toEqual(
+      ResultError(
+        unprocessableEntityError('Destiny point is blocked by an obstacle')
+      )
+    );
   });
 
-  it('should throw start error first if both points are blocked', () => {
+  it('should return start error first if both are blocked', () => {
     const obstacles = [
       { x: 0, y: 0 },
       { x: 4, y: 4 }
     ];
 
-    const run = () =>
+    const result =
       validateStartEndPoints(obstacles)(start)(end);
 
-    expect(run).toThrow(
+    expect(result.value).toEqual(
       unprocessableEntityError('Start point is blocked by an obstacle')
     );
   });

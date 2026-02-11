@@ -35,15 +35,19 @@ import {
   modifyRouteById,
   removeRouteById
 } from '../services/routeService.js';
+import { validateMapConfiguration } from '../../utils/validator/mapConfigValidator.js';
+import { validateStartEndPoints } from '../../utils/validator/routePointsValidator.js';
+import { validateWaypointsReachable } from '../../utils/validator/reachableWaypointValidator.js';
+import { Ok, Error } from '../../utils/funtional/monad.js';
 
-describe('Map Service', () => {
+describe('Route Service', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('createNewRoute', () => {
-    it('Should create a route with valid data', async () => {
+    it('Should return Ok with created route', async () => {
       const map = {
         width: 10,
         height: 10,
@@ -61,6 +65,13 @@ describe('Map Service', () => {
       const mockPath = [{ x: 0, y: 0 }, { x: 9, y: 9 }];
       const mockDistance = 12;
 
+      validateMapConfiguration.mockReturnValue(Ok(map));
+      validateStartEndPoints.mockImplementation(() =>
+        () =>
+          () =>
+            Ok(routeData)
+      );
+
       buildRouteThroughWaypoints.mockReturnValue({
         path: mockPath,
         distance: mockDistance
@@ -75,18 +86,14 @@ describe('Map Service', () => {
 
       const result = await createNewRoute(routeData, map);
 
-      expect(buildRouteThroughWaypoints).toHaveBeenCalled();
-      expect(routeRepository.createRoute).toHaveBeenCalledWith({
-        ...routeData,
-        path: mockPath,
-        distance: mockDistance
-      });
-      expect(result.path).toEqual(mockPath);
+      expect(result.isOk).toBe(true);
+      expect(result.value.path).toEqual(mockPath);
+      expect(result.value.distance).toBe(mockDistance);
     });
   });
 
   describe('validateRouteWaypoints', () => {
-    it('Should validate that waypoints are reachable', async () => {
+    it('Should return Ok when waypoints are reachable', async () => {
       const route = {
         path: [{ x: 0, y: 0 }, { x: 1, y: 1 }]
       };
@@ -96,41 +103,50 @@ describe('Map Service', () => {
       };
 
       routeRepository.getRouteById.mockResolvedValue(route);
+      validateWaypointsReachable.mockReturnValue(() => Ok(route));
 
-      await validateRouteWaypoints('1', map);
+      const result = await validateRouteWaypoints('1', map);
 
-      expect(routeRepository.getRouteById).toHaveBeenCalledWith('1');
+      expect(result.isOk).toBe(true);
     });
   });
 
   describe('fetchAllRoutes', () => {
-    it('Should return all routes', async () => {
+    it('Should return Ok with all routes', async () => {
       const routes = [{ id: '1' }, { id: '2' }];
 
       routeRepository.getAllRoutes.mockResolvedValue(routes);
 
       const result = await fetchAllRoutes();
 
-      expect(routeRepository.getAllRoutes).toHaveBeenCalled();
-      expect(result).toEqual(routes);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(routes);
     });
   });
 
   describe('fetchRouteById', () => {
-    it('Should return a route by id', async () => {
+    it('Should return Ok when route exists', async () => {
       const route = { id: '1' };
 
       routeRepository.getRouteById.mockResolvedValue(route);
 
       const result = await fetchRouteById('1');
 
-      expect(routeRepository.getRouteById).toHaveBeenCalledWith('1');
-      expect(result).toEqual(route);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(route);
+    });
+    it('Should return Error when route does not exist', async () => {
+      routeRepository.getRouteById.mockResolvedValue(null);
+
+      const result = await fetchRouteById('999');
+
+      expect(result.isError).toBe(true);
+      expect(result.value.message).toBe('Route not found');
     });
   });
 
   describe('modifyRouteById', () => {
-    it('Should update route and recalculate path', async () => {
+    it('Should return Ok when route is updated and recalculated', async () => {
       const map = {
         width: 10,
         height: 10,
@@ -159,6 +175,15 @@ describe('Map Service', () => {
         distance: mockDistance
       });
 
+      validateMapConfiguration.mockReturnValue(Ok(map));
+      validateStartEndPoints.mockImplementation(() =>
+        () =>
+          () =>
+            Ok({
+              ...existingRoute,
+              ...updateData
+            })
+      );
       buildRouteThroughWaypoints.mockReturnValue({
         path: mockPath,
         distance: mockDistance
@@ -166,19 +191,20 @@ describe('Map Service', () => {
 
       const result = await modifyRouteById('1', updateData, map);
 
-      expect(routeRepository.updateRouteById).toHaveBeenCalled();
-      expect(result.path).toEqual(mockPath);
+      expect(result.isOk).toBe(true);
+      expect(result.value.path).toEqual(mockPath);
+      expect(result.value.distance).toBe(mockDistance);
     });
   });
 
   describe('removeRouteById', () => {
-    it('Should delete route', async () => {
+    it('Should return Ok with delete result', async () => {
       routeRepository.deleteRouteById.mockResolvedValue(true);
 
       const result = await removeRouteById('1');
 
-      expect(routeRepository.deleteRouteById).toHaveBeenCalledWith('1');
-      expect(result).toBe(true);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toBe(true);
     });
   });
 });
