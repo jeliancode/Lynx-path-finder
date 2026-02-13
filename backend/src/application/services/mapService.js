@@ -1,26 +1,29 @@
 import * as mapRepository from '../../infrastructure/repositories/mapRepository.js';
 import { validateMapData } from '../../utils/validator/entityDataValidator.js';
-import { notFoundError } from '../../utils/error/httpError.js'
+import { notFoundError } from '../../utils/error/httpError.js';
+import { Ok, Error, fromPromise, ResultMonad } from '../../utils/funtional/monad.js';
+import pipe from '../../utils/funtional/pipe.js';
 
-export const createNewMap = async (mapData) => {
-    validateMapData(mapData);
-    return await mapRepository.createMap(mapData);
-};
+const ensureFound = (errorMsg) => (data) => 
+  data ? Ok(data) : Error(notFoundError(errorMsg));
 
-export const fetchAllMaps = async () => {
-    return await mapRepository.getAllMaps();
-};
+export const createNewMap = (mapData) =>
+  pipe(
+    validateMapData,
+    (validData) => fromPromise(() => mapRepository.createMap(validData))
+  )(mapData);
 
-export const fetchMapById = async (id) => {
-    const map = await mapRepository.getMapById(id);
-    if (!map) throw notFoundError('Map not found');
-    return map;
-};
+export const fetchMapById = (id) =>
+  fromPromise(() => mapRepository.getMapById(id))
+    .then(result => ResultMonad.chain(ensureFound('Map not found'))(result));
 
-export const modifyMapById = async (id, updateData) => {
-    return await mapRepository.updateMapById(id, updateData);
-};
+export const fetchAllMaps = () => 
+  fromPromise(() => mapRepository.getAllMaps());
 
-export const removeMapById = async (id) => {
-    return await mapRepository.deleteMapById(id);
-};
+export const modifyMapById = (id, data) =>
+  fromPromise(() => mapRepository.updateMapById(id, data))
+    .then(result => ResultMonad.chain(ensureFound('Map to update not found'))(result));
+
+export const removeMapById = (id) =>
+  fromPromise(() => mapRepository.deleteMapById(id))
+    .then(result => ResultMonad.chain(ensureFound('Map to delete not found'))(result));

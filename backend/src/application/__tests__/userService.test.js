@@ -26,6 +26,7 @@ import {
 
 import * as userRepository from '../../infrastructure/repositories/userRepository.js';
 import { validateUserData } from '../../utils/validator/entityDataValidator.js';
+import { Ok, Error } from '../../utils/funtional/monad.js';
 
 describe('User service', () => {
 
@@ -34,8 +35,7 @@ describe('User service', () => {
   });
 
   describe('createNewUser', () => {
-
-    it('Should create a new user with valid data', async () => {
+    it('Should return Ok when user is created successfully', async () => {
       const userData = {
         username: 'jesus maldonado',
         email: 'test@gmail.com',
@@ -44,106 +44,102 @@ describe('User service', () => {
 
       const createdUser = { id: '1', ...userData };
 
-      validateUserData.mockImplementation(() => {});
+      validateUserData.mockReturnValue(Ok(userData));
       userRepository.createUser.mockResolvedValue(createdUser);
 
       const result = await createNewUser(userData);
 
-      expect(validateUserData).toHaveBeenCalledWith(userData);
-      expect(userRepository.createUser).toHaveBeenCalledWith(userData);
-      expect(result).toEqual(createdUser);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(createdUser);
     });
 
-    it('Should throw error if user has invalid data', async () => {
-      validateUserData.mockImplementation(() => {
-        throw new Error('Invalid user data');
-      });
+    it('Should return Error when user data is invalid', async () => {
+      validateUserData.mockReturnValue(
+        Error(new Error('Invalid user data'))
+      );
 
-      await expect(createNewUser({}))
-        .rejects
-        .toThrow('Invalid user data');
+      const result = await createNewUser({});
 
+      expect(result.isError).toBe(true);
       expect(userRepository.createUser).not.toHaveBeenCalled();
     });
   });
 
   describe('fetchAllUsers', () => {
-
-    it('Should return all users', async () => {
-      const users = [
-        {
-          id: '1',
-          username: 'jesus maldonado',
-          email: 'test@gmail.com',
-          password: 'admin123'
-        }
-      ];
+    it('Should return Ok with all users', async () => {
+      const users = [{ id: '1' }];
 
       userRepository.getAllUsers.mockResolvedValue(users);
 
       const result = await fetchAllUsers();
 
-      expect(userRepository.getAllUsers).toHaveBeenCalled();
-      expect(result).toEqual(users);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(users);
     });
   });
 
   describe('fetchUserById', () => {
-
-    it('Should return user if exists', async () => {
-      const user = {
-        id: '1',
-        username: 'jesus maldonado',
-        email: 'test@gmail.com',
-        password: 'admin123'
-      };
+    it('Should return Ok when user exists', async () => {
+      const user = { id: '1' };
 
       userRepository.getUserById.mockResolvedValue(user);
 
       const result = await fetchUserById('1');
 
-      expect(userRepository.getUserById).toHaveBeenCalledWith('1');
-      expect(result).toEqual(user);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(user);
     });
 
-    it('Should throw error if user does not exist', async () => {
+    it('Should return Error when user does not exist', async () => {
       userRepository.getUserById.mockResolvedValue(null);
 
-      await expect(fetchUserById('999'))
-        .rejects
-        .toThrow('User not found');
+      const result = await fetchUserById('999');
+
+      expect(result.isError).toBe(true);
+      expect(result.value.message).toBe('User not found');
     });
   });
 
   describe('modifyUserById', () => {
-
-    it('Should update user with valid data', async () => {
-      const updateData = {
-        username: 'julian',
-        email: 'updateTest@gmail.com'
-      };
-
+    it('Should return Ok when user is updated', async () => {
+      const updateData = { username: 'julian' };
       const updatedUser = { id: '1', ...updateData };
 
       userRepository.updateUserById.mockResolvedValue(updatedUser);
 
       const result = await modifyUserById('1', updateData);
 
-      expect(userRepository.updateUserById)
-        .toHaveBeenCalledWith('1', updateData);
-      expect(result).toEqual(updatedUser);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(updatedUser);
+    });
+
+    it('Should return Error when user to update does not exist', async () => {
+      userRepository.updateUserById.mockResolvedValue(null);
+
+      const result = await modifyUserById('999', {});
+
+      expect(result.isError).toBe(true);
+      expect(result.value.message).toBe('User to update not found');
     });
   });
 
   describe('removeUserById', () => {
-
-    it('Should remove user', async () => {
+    it('Should return Ok when user is deleted', async () => {
       userRepository.deleteUserById.mockResolvedValue(true);
 
       const result = await removeUserById('1');
 
-      expect(userRepository.deleteUserById).toHaveBeenCalledWith('1');
-      expect(result).toBe(true);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toBe(true);
+    });
+
+    it('Should return Error when user to delete does not exist', async () => {
+      userRepository.deleteUserById.mockResolvedValue(null);
+
+      const result = await removeUserById('999');
+
+      expect(result.isError).toBe(true);
+      expect(result.value.message).toBe('User to delete not found');
     });
   });
 });

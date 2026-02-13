@@ -2,33 +2,46 @@ import * as obstacleRepository from '../../infrastructure/repositories/obstacleR
 import { validateObstacleInsideMap } from '../../utils/validator/insideMapValidator.js';
 import { validateObstacleData } from '../../utils/validator/entityDataValidator.js';
 import { notFoundError } from '../../utils/error/httpError.js';
+import { Ok, Error, fromPromise, ResultMonad } from '../../utils/funtional/monad.js';
+import pipe from '../../utils/funtional/pipe.js';
 
-export const createNewObstacle = async (map, obstacleData) => {
-    validateObstacleData(obstacleData);
-    validateObstacleInsideMap(map)(obstacleData);
-    return await obstacleRepository.createObstacle(obstacleData);
-};
+const ensureFound = (errorMsg) => (data) => 
+  data ? Ok(data) : Error(notFoundError(errorMsg));
 
-export const createMultipleObstacles = async (map, obstaclesData) => {
-    obstaclesData.map(data => validateObstacleData(data));
-    validateObstacleInsideMap(map)(obstaclesData);
-    return await obstacleRepository.createMultipleObstacles(obstaclesData);
-};
+export const createNewObstacle = (map, obstacleData) => 
+  pipe(
+    validateObstacleData,
+    validateObstacleInsideMap(map),
+    (data) => fromPromise(() =>
+      obstacleRepository.createObstacle(data)
+    )
+  )(obstacleData);
 
-export const fetchAllObstacles = async () => {
-    return await obstacleRepository.getAllObstacles();
-};
+export const createMultipleObstacles = (map, obstaclesData) =>
+  pipe(
+    (obstacles) => obstacles.reduce(
+      (acc, obstacle) => 
+        ResultMonad.chain(() => 
+          ResultMonad.map(() => obstacles)(validateObstacleData(obstacle))
+        )(acc),
+      Ok(obstacles)
+    ),
+    validateObstacleInsideMap(map),
+    (data) => fromPromise(() =>
+      obstacleRepository.createMultipleObstacles(data)
+    )
+  )(obstaclesData);
 
-export const fetchObstacleById = async (id) => {
-    const obstacle = await obstacleRepository.getObstacleById(id);
-    if (!obstacle) throw notFoundError('Obstacle not found');
-    return obstacle;
-};
+export const fetchAllObstacles = () => 
+  fromPromise(() => obstacleRepository.getAllObstacles());
 
-export const modifyObstacleById = async (id, updateData) => {
-    return await obstacleRepository.updateObstacleById(id, updateData);
-};
+export const fetchObstacleById = (id) =>
+  fromPromise(() => obstacleRepository.getObstacleById(id))
+    .then(result => ResultMonad.chain(ensureFound('Obstacle not found'))(result));
 
-export const removeObstacleById = async (id) => {
-    return await obstacleRepository.deleteObstacleById(id);
-};
+export const modifyObstacleById = (id, updateData) =>
+  fromPromise(() => obstacleRepository.updateObstacleById(id, updateData))
+    .then(result => ResultMonad.chain(ensureFound('Obstacle to update not found'))(result));
+
+export const removeObstacleById = (id) =>
+  fromPromise(() => obstacleRepository.deleteObstacleById(id));

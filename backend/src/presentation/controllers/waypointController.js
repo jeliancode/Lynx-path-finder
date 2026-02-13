@@ -1,76 +1,71 @@
 import * as waypointService from '../../application/services/waypointService.js'
+import { ResultMonad } from '../../utils/funtional/monad.js';
 import { createdSuccessfully, completedSuccessfully, deletedSuccessfully } from '../../utils/error/httpSuccess.js';
 
 export const createWaypoint = async (req, res, next) => {
-    try {
-        const { name, x, y } = req.body;
-        const { mapId } = req.params;
-        const map = req.map;
-        const newWaypoint = await waypointService.createNewWaypoint(map, { name, x, y, mapId });
+    const { name, x, y } = req.body;
+    const { mapId } = req.params;
+    const map = req.map;
+    const creationResult = await waypointService.createNewWaypoint(map, { name, x, y, mapId });
 
-        createdSuccessfully(res)('Waypoint created successfully')(newWaypoint);
-    } catch (error) {
-        next(error);
-    }
+    ResultMonad.fold(
+        (error) => next(error),
+        (newWaypoint) => createdSuccessfully(res)('Waypoint created successfully')(newWaypoint)
+    )(creationResult);
 };
 
 export const createMultipleWaypoints = async (req, res, next) => {
-    try {
-        const waypointsData = req.body;
-        const map = req.map;
-        const { mapId } = req.params;
-        const waypointsWithMapId = waypointsData.map(waypoint => ({
-            ...waypoint,
-            mapId
-        }))
-        const newWaypoints = await waypointService.createMultipleWaypoints(map, waypointsWithMapId);
+    const waypointsData = req.body;
+    const map = req.map;
+    const { mapId } = req.params;
+    const waypointsWithMapId = waypointsData.map(waypoint => ({
+        ...waypoint,
+        mapId
+    }));
+    const creationResult = await waypointService.createMultipleWaypoints(map, waypointsWithMapId);
 
-        createdSuccessfully(res)('Waypoints created successfully')(newWaypoints);
-    } catch (error) {
-        next(error);
-    }
+    ResultMonad.fold(
+        (error) => next(error),
+        (newWaypoints) => createdSuccessfully(res)('Waypoints created successfully')(newWaypoints)
+    )(creationResult);
 };
 
 export const getAllWaypoints = async (req, res, next) => {
-    try {
-        const waypoints = await waypointService.fetchAllWaypoints();
+    const getResult = await waypointService.fetchAllWaypoints();
 
-        completedSuccessfully(res)('All waypoints get successfully')(waypoints);
-    } catch (error) {
-        next(error);
-    }
+    ResultMonad.fold(
+        (error) => next(error),
+        (waypoints) => completedSuccessfully(res)('All waypoints get successfully')(waypoints)
+    )(getResult);
 };
 
 export const getWaypointById = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const waypoint = await waypointService.fetchWaypointById(id);
+    const { id } = req.params;
+    const getResult = await waypointService.fetchWaypointById(id);
 
-        completedSuccessfully(res)('Waypoint get successfully')(waypoint);
-    } catch (error) {
-        next(error);
-    }
+    ResultMonad.fold(
+        (error) => next(error),
+        (waypoint) => completedSuccessfully(res)('Waypoint get successfully')(waypoint)
+    )(getResult);
 };
 
 export const updateWaypoint = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const updateData = req.body;
-        const updatedWaypoint = await waypointService.modifyWaypointById(id, updateData);
+    const { id } = req.params;
+    const updateData = req.body;
+    const updateResult = await waypointService.modifyWaypointById(id, updateData);
 
-        completedSuccessfully(res)('Waypoint updated successfully')(updatedWaypoint);
-    } catch (error) {
-        next(error);
-    }
+    ResultMonad.fold(
+        (error) => next(error),
+        (updatedWaypoint) => completedSuccessfully(res)('Waypoint updated successfully')(updatedWaypoint)
+    )(updateResult);
 };
 
 export const deleteWaypoint = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        await waypointService.removeWaypointById(id);
+    const { id } = req.params;
+    const deleteResult = await waypointService.removeWaypointById(id);
 
-        deletedSuccessfully(res)('Waypoint deleted succcessfully');
-    } catch (error) {
-        next(error);
-    }
+    ResultMonad.fold(
+        (error) => next(error),
+        (deletedWaypoint) => deletedSuccessfully(res)('Waypoint deleted successfully')(deletedWaypoint)
+    )(deleteResult);
 };

@@ -36,6 +36,7 @@ import {
 import * as waypointRepository from '../../infrastructure/repositories/waypointRepository.js';
 import { validateWaypointData } from '../../utils/validator/entityDataValidator.js';
 import { validateWaypointsInsideMap } from '../../utils/validator/insideMapValidator.js';
+import { Ok, Error } from '../../utils/funtional/monad.js';
 
 describe('Waypoint Service', () => {
 
@@ -44,15 +45,13 @@ describe('Waypoint Service', () => {
   });
 
   describe('createNewWaypoint', () => {
-
-    it('Should create a waypoint with valid data', async () => {
+    it('Should return Ok with created waypoint', async () => {
       const map = { id: '1', width: 10, height: 10 };
       const waypointData = { name: 'Waypoint test', x: 3, y: 3 };
       const createdWaypoint = { id: '1', ...waypointData };
 
-      validateWaypointData.mockImplementation(() => {});
-      validateWaypointsInsideMap.mockReturnValue(jest.fn());
-
+      validateWaypointData.mockReturnValue(Ok(waypointData));
+      validateWaypointsInsideMap.mockReturnValue(() => Ok(waypointData));
       waypointRepository.createWaypoint.mockResolvedValue(createdWaypoint);
 
       const result = await createNewWaypoint(map, waypointData);
@@ -61,120 +60,135 @@ describe('Waypoint Service', () => {
       expect(validateWaypointsInsideMap).toHaveBeenCalledWith(map);
       expect(waypointRepository.createWaypoint)
         .toHaveBeenCalledWith(waypointData);
-      expect(result).toEqual(createdWaypoint);
+
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(createdWaypoint);
     });
 
-    it('Should throw error if waypoint data is invalid', async () => {
-      validateWaypointData.mockImplementation(() => {
-        throw new Error('Invalid waypoint data');
-      });
+    it('returns Error when waypoint data is invalid', async () => {
+      const error = new Error('Invalid waypoint data');
 
-      const map = { id: '1', width: 10, height: 10 };
-      const waypointData = { name: '', x: 3, y: 50 };
+      validateWaypointData.mockReturnValue(Error(error));
 
-      await expect(createNewWaypoint(map, waypointData))
-        .rejects
-        .toThrow('Invalid waypoint data');
+      const result = await createNewWaypoint({}, {});
 
+      expect(result.isError).toBe(true);
+      expect(result.value).toBe(error);
       expect(waypointRepository.createWaypoint).not.toHaveBeenCalled();
+    });
+
+    it('Should return Error when waypoint is outside map', async () => {
+      const error = new Error('Outside map');
+
+      validateWaypointData.mockReturnValue(Ok({}));
+      validateWaypointsInsideMap.mockReturnValue(() => Error(error));
+
+      const result = await createNewWaypoint({}, {});
+
+      expect(result.isError).toBe(true);
+      expect(result.value).toBe(error);
     });
   });
 
   describe('createMultipleWaypoints', () => {
-
-    it('Should create multiple waypoints with valid data', async () => {
+    it('Should return Ok when all waypoints are valid', async () => {
       const map = { id: '1', width: 10, height: 10 };
-      const waypointsData = [
+      const waypoints = [
         { name: 'W1', x: 1, y: 1 },
         { name: 'W2', x: 2, y: 2 },
         { name: 'W3', x: 5, y: 5 }
       ];
 
-      const createdWaypoints = waypointsData.map((w, i) => ({
+      const created = waypoints.map((w, i) => ({
         id: `${i + 1}`,
         ...w
       }));
 
-      validateWaypointData.mockImplementation(() => {});
-      validateWaypointsInsideMap.mockReturnValue(jest.fn());
+      validateWaypointData.mockImplementation(w => Ok(w));
+      validateWaypointsInsideMap.mockReturnValue(() => Ok(waypoints));
+      waypointRepository.createMultipleWaypoints.mockResolvedValue(created);
 
-      waypointRepository.createMultipleWaypoints
-        .mockResolvedValue(createdWaypoints);
+      const result = await createMultipleWaypoints(map, waypoints);
 
-      const result = await createMultipleWaypoints(map, waypointsData);
-
-      expect(validateWaypointData).toHaveBeenCalledTimes(waypointsData.length);
+      expect(validateWaypointData).toHaveBeenCalledTimes(waypoints.length);
       expect(validateWaypointsInsideMap).toHaveBeenCalledWith(map);
       expect(waypointRepository.createMultipleWaypoints)
-        .toHaveBeenCalledWith(waypointsData);
-      expect(result).toEqual(createdWaypoints);
+        .toHaveBeenCalledWith(waypoints);
+
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(created);
+    });
+
+    it('Should return Error when one waypoint is invalid', async () => {
+      const error = new Error('Invalid waypoint');
+
+      validateWaypointData
+        .mockReturnValueOnce(Ok({}))
+        .mockReturnValueOnce(Error(error));
+
+      const result = await createMultipleWaypoints({}, [{}, {}]);
+
+      expect(result.isError).toBe(true);
+      expect(result.value).toBe(error);
     });
   });
 
   describe('fetchAllWaypoints', () => {
-
-    it('Should return all waypoints', async () => {
+    it('Should return Ok with all waypoints', async () => {
       const waypoints = [{ id: '1' }, { id: '2' }];
 
       waypointRepository.getAllWaypoints.mockResolvedValue(waypoints);
 
       const result = await fetchAllWaypoints();
 
-      expect(waypointRepository.getAllWaypoints).toHaveBeenCalled();
-      expect(result).toEqual(waypoints);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(waypoints);
     });
   });
 
   describe('fetchWaypointById', () => {
-
-    it('Should return waypoint if exists', async () => {
+    it('Should return Ok when waypoint exists', async () => {
       const waypoint = { id: '1' };
 
       waypointRepository.getWaypointById.mockResolvedValue(waypoint);
 
       const result = await fetchWaypointById('1');
 
-      expect(waypointRepository.getWaypointById)
-        .toHaveBeenCalledWith('1');
-      expect(result).toEqual(waypoint);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(waypoint);
     });
 
-    it('Should throw error if waypoint does not exist', async () => {
+    it('Should return Error when waypoint does not exist', async () => {
       waypointRepository.getWaypointById.mockResolvedValue(null);
 
-      await expect(fetchWaypointById('999'))
-        .rejects
-        .toThrow('Waypoint not found');
+      const result = await fetchWaypointById('999');
+
+      expect(result.isError).toBe(true);
+      expect(result.value.message).toBe('Waypoint not found');
     });
   });
 
   describe('modifyWaypointById', () => {
+    it('Should return Ok when waypoint is updated', async () => {
+      const updated = { id: '1', name: 'Updated name' };
 
-    it('Should update waypoint', async () => {
-      const updateData = { name: 'Updated name' };
-      const updatedWaypoint = { id: '1', ...updateData };
+      waypointRepository.updateWaypointById.mockResolvedValue(updated);
 
-      waypointRepository.updateWaypointById
-        .mockResolvedValue(updatedWaypoint);
+      const result = await modifyWaypointById('1', { name: 'Updated name' });
 
-      const result = await modifyWaypointById('1', updateData);
-
-      expect(waypointRepository.updateWaypointById)
-        .toHaveBeenCalledWith('1', updateData);
-      expect(result).toEqual(updatedWaypoint);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(updated);
     });
   });
 
   describe('removeWaypointById', () => {
-
-    it('Should delete waypoint', async () => {
+    it('Should return Ok with delete result', async () => {
       waypointRepository.deleteWaypointById.mockResolvedValue(true);
 
       const result = await removeWaypointById('1');
 
-      expect(waypointRepository.deleteWaypointById)
-        .toHaveBeenCalledWith('1');
-      expect(result).toBe(true);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toBe(true);
     });
   });
 });

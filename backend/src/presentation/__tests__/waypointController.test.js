@@ -28,6 +28,7 @@ import {
   completedSuccessfully,
   deletedSuccessfully
 } from '../../utils/error/httpSuccess.js';
+import { Ok, Error } from '../../utils/funtional/monad.js';
 
 const mockRes = () => ({});
 const mockNext = jest.fn();
@@ -49,7 +50,7 @@ describe('Waypoint Controller', () => {
 
       const createdWaypoint = { id: '1', ...req.body, mapId: 'map-1' };
 
-      waypointService.createNewWaypoint.mockResolvedValue(createdWaypoint);
+      waypointService.createNewWaypoint.mockResolvedValue(Ok(createdWaypoint));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -70,7 +71,7 @@ describe('Waypoint Controller', () => {
       const req = { body: {}, params: {}, map: {} };
       const res = mockRes();
 
-      waypointService.createNewWaypoint.mockRejectedValue(error);
+      waypointService.createNewWaypoint.mockResolvedValue(Error(error));
 
       await createWaypoint(req, res, mockNext);
 
@@ -95,8 +96,7 @@ describe('Waypoint Controller', () => {
         mapId: 'map-1'
       }));
 
-      waypointService.createMultipleWaypoints
-        .mockResolvedValue(waypointsWithMapId);
+      waypointService.createMultipleWaypoints.mockResolvedValue(Ok(waypointsWithMapId));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -116,7 +116,7 @@ describe('Waypoint Controller', () => {
       const res = mockRes();
       const waypoints = [{ id: '1' }, { id: '2' }];
 
-      waypointService.fetchAllWaypoints.mockResolvedValue(waypoints);
+      waypointService.fetchAllWaypoints.mockResolvedValue(Ok(waypoints));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -136,7 +136,7 @@ describe('Waypoint Controller', () => {
       const res = mockRes();
       const waypoint = { id: '1', name: 'WP' };
 
-      waypointService.fetchWaypointById.mockResolvedValue(waypoint);
+      waypointService.fetchWaypointById.mockResolvedValue(Ok(waypoint));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -159,7 +159,7 @@ describe('Waypoint Controller', () => {
       const res = mockRes();
       const updatedWaypoint = { id: '1', ...req.body };
 
-      waypointService.modifyWaypointById.mockResolvedValue(updatedWaypoint);
+      waypointService.modifyWaypointById.mockResolvedValue(Ok(updatedWaypoint));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -178,7 +178,7 @@ describe('Waypoint Controller', () => {
       const req = { params: { id: '1' } };
       const res = mockRes();
 
-      waypointService.removeWaypointById.mockResolvedValue(true);
+      waypointService.removeWaypointById.mockResolvedValue(Ok(true));
 
       const responseFn = jest.fn();
       const messageFn = jest.fn().mockReturnValue(responseFn);
@@ -187,7 +187,7 @@ describe('Waypoint Controller', () => {
       await deleteWaypoint(req, res, mockNext);
 
       expect(waypointService.removeWaypointById).toHaveBeenCalledWith('1');
-      expect(messageFn).toHaveBeenCalledWith('Waypoint deleted succcessfully');
+      expect(messageFn).toHaveBeenCalledWith('Waypoint deleted successfully');
     });
   });
 });

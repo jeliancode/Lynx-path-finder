@@ -36,6 +36,7 @@ import {
 import * as obstacleRepository from '../../infrastructure/repositories/obstacleRepository.js';
 import { validateObstacleData } from '../../utils/validator/entityDataValidator.js';
 import { validateObstacleInsideMap } from '../../utils/validator/insideMapValidator.js';
+import { Ok, Error } from '../../utils/funtional/monad.js';
 
 describe('Obstacle Service', () => {
 
@@ -44,123 +45,144 @@ describe('Obstacle Service', () => {
   });
 
   describe('createNewObstacle', () => {
-    it('Should validate data and create obstacle', async () => {
+    it('Should return Ok with created obstacle', async () => {
       const map = { id: '1' };
       const obstacleData = { x: 5, y: 4, width: 1, height: 2 };
       const createdObstacle = { id: '1', ...obstacleData };
 
-      validateObstacleData.mockReturnValue(undefined);
-      validateObstacleInsideMap.mockReturnValue(() => undefined);
+      validateObstacleData.mockReturnValue(Ok(obstacleData));
+      validateObstacleInsideMap.mockReturnValue(() => Ok(obstacleData));
       obstacleRepository.createObstacle.mockResolvedValue(createdObstacle);
 
       const result = await createNewObstacle(map, obstacleData);
 
       expect(validateObstacleData).toHaveBeenCalledWith(obstacleData);
       expect(validateObstacleInsideMap).toHaveBeenCalledWith(map);
-      expect(obstacleRepository.createObstacle)
-        .toHaveBeenCalledWith(obstacleData);
-      expect(result).toEqual(createdObstacle);
+      expect(obstacleRepository.createObstacle).toHaveBeenCalledWith(obstacleData);
+
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(createdObstacle);
     });
 
-    it('Should throw error if validateObstacleData throws', async () => {
-      const map = {};
-      const obstacleData = { x: 5 };
+    it('Should return Error when obstacle data is invalid', async () => {
+      const error = new Error('Invalid obstacle data');
 
-      validateObstacleData.mockImplementation(() => {
-        throw new Error('Invalid obstacle data');
-      });
+      validateObstacleData.mockReturnValue(Error(error));
 
-      await expect(createNewObstacle(map, obstacleData))
-        .rejects
-        .toThrow('Invalid obstacle data');
+      const result = await createNewObstacle({}, {});
 
+      expect(result.isError).toBe(true);
+      expect(result.value).toBe(error);
       expect(obstacleRepository.createObstacle).not.toHaveBeenCalled();
+    });
+    it('Should return Error when obstacle is outside map', async () => {
+      const error = new Error('Outside map');
+
+      validateObstacleData.mockReturnValue(Ok({}));
+      validateObstacleInsideMap.mockReturnValue(() => Error(error));
+
+      const result = await createNewObstacle({}, {});
+
+      expect(result.isError).toBe(true);
+      expect(result.value).toBe(error);
     });
   });
 
   describe('createMultipleObstacles', () => {
-    it('Should validate and create multiple obstacles', async () => {
+    it('Should return Ok when all obstacles are valid', async () => {
       const map = { id: '1' };
-      const obstaclesData = [
-        { x: 1, y: 1, width: 1, height: 1 },
-        { x: 2, y: 2, width: 1, height: 1 }
+      const obstacles = [
+        { x: 1, y: 1 },
+        { x: 2, y: 2 }
       ];
 
-      const created = obstaclesData.map((o, i) => ({ id: `${i}`, ...o }));
+      const created = obstacles.map((o, i) => ({ id: `${i}`, ...o }));
 
-      validateObstacleData.mockReturnValue(undefined);
-      validateObstacleInsideMap.mockReturnValue(() => undefined);
+      validateObstacleData.mockImplementation(o => Ok(o));
+      validateObstacleInsideMap.mockReturnValue(() => Ok(obstacles));
       obstacleRepository.createMultipleObstacles.mockResolvedValue(created);
 
-      const result = await createMultipleObstacles(map, obstaclesData);
+      const result = await createMultipleObstacles(map, obstacles);
 
-      expect(validateObstacleData).toHaveBeenCalledTimes(obstaclesData.length);
+      expect(validateObstacleData).toHaveBeenCalledTimes(obstacles.length);
       expect(validateObstacleInsideMap).toHaveBeenCalledWith(map);
       expect(obstacleRepository.createMultipleObstacles)
-        .toHaveBeenCalledWith(obstaclesData);
-      expect(result).toEqual(created);
+        .toHaveBeenCalledWith(obstacles);
+
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(created);
+    });
+
+    it('Should return Error when one obstacle is invalid', async () => {
+      const error = new Error('Invalid obstacle');
+
+      validateObstacleData
+        .mockReturnValueOnce(Ok({}))
+        .mockReturnValueOnce(Error(error));
+
+      const result = await createMultipleObstacles({}, [{}, {}]);
+
+      expect(result.isError).toBe(true);
+      expect(result.value).toBe(error);
     });
   });
 
   describe('fetchAllObstacles', () => {
-    it('Should return all obstacles', async () => {
+    it('Should return Ok with all obstacles', async () => {
       const obstacles = [{ id: '1' }];
 
       obstacleRepository.getAllObstacles.mockResolvedValue(obstacles);
 
       const result = await fetchAllObstacles();
 
-      expect(obstacleRepository.getAllObstacles).toHaveBeenCalled();
-      expect(result).toEqual(obstacles);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(obstacles);
     });
   });
 
   describe('fetchObstacleById', () => {
-    it('Should return obstacle if exists', async () => {
+    it('Should return Ok when obstacle exists', async () => {
       const obstacle = { id: '1' };
 
       obstacleRepository.getObstacleById.mockResolvedValue(obstacle);
 
       const result = await fetchObstacleById('1');
 
-      expect(obstacleRepository.getObstacleById)
-        .toHaveBeenCalledWith('1');
-      expect(result).toEqual(obstacle);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(obstacle);
     });
 
-    it('Should throw error if obstacle not found', async () => {
+    it('Should return Error when obstacle not found', async () => {
       obstacleRepository.getObstacleById.mockResolvedValue(null);
 
-      await expect(fetchObstacleById('999'))
-        .rejects
-        .toThrow('Obstacle not found');
+      const result = await fetchObstacleById('999');
+
+      expect(result.isError).toBe(true);
+      expect(result.value.message).toBe('Obstacle not found');
     });
   });
 
   describe('modifyObstacleById', () => {
-    it('Should update obstacle', async () => {
-      const updateData = { width: 2 };
-      const updated = { id: '1', ...updateData };
+    it('Should return Ok when obstacle is updated', async () => {
+      const updated = { id: '1', width: 2 };
 
       obstacleRepository.updateObstacleById.mockResolvedValue(updated);
 
-      const result = await modifyObstacleById('1', updateData);
+      const result = await modifyObstacleById('1', { width: 2 });
 
-      expect(obstacleRepository.updateObstacleById)
-        .toHaveBeenCalledWith('1', updateData);
-      expect(result).toEqual(updated);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(updated);
     });
   });
 
   describe('removeObstacleById', () => {
-    it('Should delete obstacle', async () => {
+    it('Should return Ok with delete result', async () => {
       obstacleRepository.deleteObstacleById.mockResolvedValue(true);
 
       const result = await removeObstacleById('1');
 
-      expect(obstacleRepository.deleteObstacleById)
-        .toHaveBeenCalledWith('1');
-      expect(result).toBe(true);
+      expect(result.isOk).toBe(true);
+      expect(result.value).toBe(true);
     });
   });
 });

@@ -1,5 +1,7 @@
 import { validateWaypointsReachable } from '../validator/reachableWaypointValidator.js';
 import { unprocessableEntityError } from '../error/httpError.js';
+import { Ok, Error as ResultError } from '../funtional/monad.js';
+
 
 describe('validateWaypointsReachable', () => {
 
@@ -16,9 +18,10 @@ describe('validateWaypointsReachable', () => {
       { x: 2, y: 1 }
     ];
 
-    expect(() =>
-      validateWaypointsReachable(path)(waypoints)
-    ).not.toThrow();
+    const result =
+      validateWaypointsReachable(path)(waypoints);
+
+    expect(result).toEqual(Ok(waypoints));
   });
 
   it('should throw error when some waypoint is not reachable', () => {
@@ -33,21 +36,24 @@ describe('validateWaypointsReachable', () => {
       { x: 5, y: 5 }
     ];
 
-    expect(() =>
-      validateWaypointsReachable(path)(waypoints)
-    ).toThrow(unprocessableEntityError('Some waypoints are not reachable in the given path'));
-  });
+  const result =
+    validateWaypointsReachable(path)(waypoints);
+
+    expect(result.isError).toBe(true);
+    expect(result.value).toEqual(
+      unprocessableEntityError('Some waypoints are not reachable in the given path')
+    );
+    });
 
   it('should not throw error when waypoints list is empty', () => {
     const path = [
       { x: 0, y: 0 },
       { x: 1, y: 1 }
     ];
+    
+    const result =
+      validateWaypointsReachable(path)([]);
 
-    const waypoints = [];
-
-    expect(() =>
-      validateWaypointsReachable(path)(waypoints)
-    ).not.toThrow();
-  });
+    expect(result).toEqual(Ok([]));
+    });
 });

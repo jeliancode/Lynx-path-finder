@@ -1,5 +1,7 @@
 import { validateMapConfiguration } from '../validator/mapConfigValidator.js';
 import { unprocessableEntityError } from '../error/httpError.js';
+import { Ok, Error } from '../funtional/monad.js';
+
 
 describe('validateMapConfiguration validator', () => {
   const validMap = {
@@ -7,11 +9,12 @@ describe('validateMapConfiguration validator', () => {
     waypoints: [{ x: 2, y: 2 }]
   };
 
-  it('should return map when obstacles and waypoints exist', () => {
+  it('should return Ok(map) when obstacles and waypoints exist', () => {
     const result = validateMapConfiguration(validMap);
 
-    expect(result).toBe(validMap);
+    expect(result).toEqual(Ok(validMap));
   });
+
 
   it('should throw error when map has no obstacles', () => {
     const mapWithoutObstacles = {
@@ -19,9 +22,10 @@ describe('validateMapConfiguration validator', () => {
       waypoints: [{ x: 2, y: 2 }]
     };
 
-    const run = () => validateMapConfiguration(mapWithoutObstacles);
+    const result = validateMapConfiguration(mapWithoutObstacles);
 
-    expect(run).toThrow(
+    expect(result.isError).toBe(true);
+    expect(result.value).toEqual(
       unprocessableEntityError('Map must contain obstacles')
     );
   });
@@ -31,9 +35,10 @@ describe('validateMapConfiguration validator', () => {
       waypoints: [{ x: 2, y: 2 }]
     };
 
-    const run = () => validateMapConfiguration(mapWithoutObstaclesProp);
+    const result = validateMapConfiguration(mapWithoutObstaclesProp);
 
-    expect(run).toThrow(
+    expect(result.isError).toBe(true);
+    expect(result.value).toEqual(
       unprocessableEntityError('Map must contain obstacles')
     );
   });
@@ -44,9 +49,9 @@ describe('validateMapConfiguration validator', () => {
       waypoints: []
     };
 
-    const run = () => validateMapConfiguration(mapWithoutWaypoints);
+    const result = validateMapConfiguration(mapWithoutWaypoints);
 
-    expect(run).toThrow(
+    expect(result.value).toEqual(
       unprocessableEntityError('Map must contain waypoints')
     );
   });
@@ -57,9 +62,9 @@ describe('validateMapConfiguration validator', () => {
       waypoints: []
     };
 
-    const run = () => validateMapConfiguration(invalidMap);
+    const result = validateMapConfiguration(invalidMap);
 
-    expect(run).toThrow(
+    expect(result.value).toEqual(
       unprocessableEntityError('Map must contain obstacles')
     );
   });

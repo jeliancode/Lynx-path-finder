@@ -2,33 +2,44 @@ import * as waypointRepository from '../../infrastructure/repositories/waypointR
 import { validateWaypointsInsideMap } from '../../utils/validator/insideMapValidator.js';
 import { validateWaypointData } from '../../utils/validator/entityDataValidator.js';
 import { notFoundError } from '../../utils/error/httpError.js';
+import { Ok, Error, fromPromise, ResultMonad } from '../../utils/funtional/monad.js';
+import pipe from '../../utils/funtional/pipe.js';
 
-export const createNewWaypoint = async (map, waypointData) => {
-    validateWaypointData(waypointData);
-    validateWaypointsInsideMap(map)(waypointData);
-    return await waypointRepository.createWaypoint(waypointData);
-};
+const ensureFound = (errorMsg) => (data) => 
+  data ? Ok(data) : Error(notFoundError(errorMsg));
 
-export const createMultipleWaypoints = async (map, waypointsData) => {
-    waypointsData.map(data => validateWaypointData(data));
-    validateWaypointsInsideMap(map)(waypointsData);
-    return await waypointRepository.createMultipleWaypoints(waypointsData);
-};
+export const createNewWaypoint = (map, waypointData) => 
+  pipe(
+    validateWaypointData,
+    validateWaypointsInsideMap(map),
+    (data) => fromPromise(() => waypointRepository.createWaypoint(data))
+  )(waypointData);
 
-export const fetchAllWaypoints = async () => {
-    return await waypointRepository.getAllWaypoints();
-};
+export const createMultipleWaypoints = (map, waypointsData) =>
+  pipe(
+    (waypoints) => waypoints.reduce(
+      (acc, waypoint) =>
+        ResultMonad.chain(() =>
+          ResultMonad.map(() => waypoints)(validateWaypointData(waypoint))
+        )(acc),
+        Ok(waypoints)
+    ),
+    validateWaypointsInsideMap(map),
+    (data) => fromPromise(() => 
+      waypointRepository.createMultipleWaypoints(data)
+    )
+  )(waypointsData);
 
-export const fetchWaypointById = async (id) => {
-    const waypoint = await waypointRepository.getWaypointById(id);
-    if (!waypoint) throw notFoundError('Waypoint not found');
-    return waypoint;
-};
+export const fetchAllWaypoints = () => 
+  fromPromise(() => waypointRepository.getAllWaypoints());
 
-export const modifyWaypointById = async (id, updateData) => { 
-    return await waypointRepository.updateWaypointById(id, updateData);
-};
+export const fetchWaypointById = (id) =>
+  fromPromise(() => waypointRepository.getWaypointById(id))
+    .then(result => ResultMonad.chain(ensureFound('Waypoint not found'))(result));
 
-export const removeWaypointById = async (id) => {
-    return await waypointRepository.deleteWaypointById(id);
-};
+export const modifyWaypointById = (id, updateData) =>
+  fromPromise(() => waypointRepository.updateWaypointById(id, updateData))
+    .then(result => ResultMonad.chain(ensureFound('Waypoint to update not found'))(result));
+
+export const removeWaypointById = (id) =>
+  fromPromise(() => waypointRepository.deleteWaypointById(id));
