@@ -1,4 +1,4 @@
-import { Ok, Error } from '../funtional/monad.js';
+import { Ok, Error } from '../shared/funtional/monad.js';
 
 const validateWith = (predicate, errorFactory) => (value) => 
   predicate(value)

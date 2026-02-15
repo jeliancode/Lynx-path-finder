@@ -1,40 +1,43 @@
+import { 
+  createRecord,  
+  findUniqueRecord, 
+  updateRecord, 
+  deleteRecord 
+} from './baseRepository.js';
+import { findManyRecords } from '../../domain/repositories/manyQueryRepository.js';
 import prisma from '../prisma.js';
 
-export const createUser = async (userData) => {
-  return await prisma.user.create({
-    data: {
-      username: userData.username,
-      email: userData.email,
-      password: userData.password,
-    },
-  });
-};
+const entity = 'user';
 
-export const getAllUsers = async () => {
-  return await prisma.user.findMany();
-};
+const mapUserData = (data) => ({
+  username: data.username,
+  email: data.email,
+  password: data.password,
+});
 
-export const getUserById = async (id) => {
+export const createUser = async (userData) => 
+  await createRecord(entity, mapUserData(userData));
+
+export const getAllUsers = async () => 
+  await findManyRecords(entity);
+
+export const getUserById = async (id) => 
+  await findUniqueRecord(entity, id);
+
+export const updateUserById = async (id, updateData) => 
+  await updateRecord(entity, id, updateData);
+
+export const deleteUserById = async (id) => 
+  await deleteRecord(entity, id);
+
+export const getUserByUsername = async (username) => {
   return await prisma.user.findUnique({
-    where: { id },
+    where: { username }
   });
 };
 
 export const getUserByEmail = async (email) => {
   return await prisma.user.findUnique({
-    where: { email },
-  });
-};
-
-export const updateUserById = async (id, updateData) => {
-  return await prisma.user.update({
-    where: { id },
-    data: updateData,
-  });
-};
-
-export const deleteUserById = async (id) => {
-  return await prisma.user.delete({
-    where: { id },
+    where: { email }
   });
 };

@@ -1,46 +1,34 @@
-import prisma from '../prisma.js';
+import { 
+  createRecord, 
+  findUniqueRecord, 
+  updateRecord, 
+  deleteRecord 
+} from './baseRepository.js';
+import { findManyRecords, createManyRecords } from '../../domain/repositories/manyQueryRepository.js';
 
-export const createWaypoint = async (waypointData) => {
-  return await prisma.waypoint.create({
-    data: {
-        name: waypointData.name,
-        x: waypointData.x,
-        y: waypointData.y,
-        mapId: waypointData.mapId,
-    },
-  });
-};
+const entity = 'waypoint';
 
-export const createMultipleWaypoints = async (waypointsData) => {
-  return await prisma.waypoint.createMany({
-    data: waypointsData.map(waypoint => ({
-        name: waypoint.name,
-        x: waypoint.x,
-        y: waypoint.y,
-        mapId: waypoint.mapId,
-    })),
-  });
-};
+const mapWaypointData = (data) => ({
+  name: data.name,
+  x: data.x,
+  y: data.y,
+  mapId: data.mapId,
+});
 
-export const getAllWaypoints = async () => {
-  return await prisma.waypoint.findMany();
-};
+export const createWaypoint = async (waypointData) => 
+  await createRecord(entity, mapWaypointData(waypointData));
 
-export const getWaypointById = async (id) => {
-  return await prisma.waypoint.findUnique({
-    where: { id },
-  });
-};
+export const createMultipleWaypoints = async (waypointsData) => 
+  await createManyRecords(entity, waypointsData.map(mapWaypointData));
 
-export const updateWaypointById = async (id, updateData) => {
-  return await prisma.waypoint.update({
-    where: { id },
-    data: updateData,
-  });
-};
+export const getAllWaypoints = async () => 
+  await findManyRecords(entity);
 
-export const deleteWaypointById = async (id) => {
-  return await prisma.waypoint.delete({
-    where: { id },
-  });
-};
+export const getWaypointById = async (id) => 
+  await findUniqueRecord(entity, id);
+
+export const updateWaypointById = async (id, updateData) => 
+  await updateRecord(entity, id, updateData);
+
+export const deleteWaypointById = async (id) => 
+  await deleteRecord(entity, id);

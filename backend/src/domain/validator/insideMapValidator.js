@@ -1,5 +1,5 @@
 import validateWith from './validator.js';
-import { unprocessableEntityError } from '../error/httpError.js';
+import { unprocessableEntityError } from '../shared/error/httpError.js';
 
 const asArray = (value) => Array.isArray(value) ? value : [value];
 

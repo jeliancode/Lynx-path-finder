@@ -1,14 +1,16 @@
 import express from 'express';
-import * as routeController from '../controllers/routeController.js';
+import { routeController } from '../controllers/routeController.js';
+import { container } from '../../infrastructure/container.js';
 
 const router = express.Router({ mergeParams: true });
+const controller = routeController(container.routeService);
 
 router
-    .post('/', routeController.createRoute)
-    .get('/validate/:id', routeController.validateRouteWaypoints)
-    .get('/', routeController.getAllRoutes)
-    .get('/:id', routeController.getRouteById)
-    .put('/:id', routeController.updateRoute)
-    .delete('/:id', routeController.deleteRoute);
+    .post('/', controller.createRoute)
+    .get('/validate/:id', controller.validateRouteWaypoints)
+    .get('/', controller.getAllRoutes)
+    .get('/:id', controller.getRouteById)
+    .put('/:id', controller.updateRoute)
+    .delete('/:id', controller.deleteRoute);
     
 export default router;

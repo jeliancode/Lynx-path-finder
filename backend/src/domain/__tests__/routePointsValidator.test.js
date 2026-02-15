@@ -1,6 +1,6 @@
 import { validateStartEndPoints } from '../validator/routePointsValidator.js';
-import { unprocessableEntityError } from '../error/httpError.js';
-import { Ok, Error as ResultError } from '../funtional/monad.js';
+import { unprocessableEntityError } from '../shared/error/httpError.js';
+import { Ok, Error as ResultError } from '../shared/funtional/monad.js';
 
 describe('validateStartEndPoints validator', () => {
   const start = { x: 0, y: 0 };

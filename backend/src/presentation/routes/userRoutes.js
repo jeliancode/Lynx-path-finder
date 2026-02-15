@@ -1,13 +1,15 @@
 import express from 'express';
-import * as userController  from '../controllers/userController.js';
+import { container } from '../../infrastructure/container.js';
+import { userController } from '../controllers/userController.js';
 
 const router = express.Router({ mergeParams: true });
+const controller = userController(container.userService);
 
 router
-    .post('/', userController.createUser)
-    .get('/', userController.getAllUsers)
-    .get('/:id', userController.getUserById)
-    .put('/:id', userController.updateUser)
-    .delete('/:id', userController.deleteUser);
+    .post('/', controller.createUser)
+    .get('/', controller.getAllUsers)
+    .get('/:id', controller.getUserById)
+    .put('/:id', controller.updateUser)
+    .delete('/:id', controller.deleteUser);
 
 export default router;

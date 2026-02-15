@@ -1,48 +1,36 @@
-import prisma from '../prisma.js';
+import { 
+  createRecord, 
+  createManyRecords, 
+  findUniqueRecord, 
+  updateRecord, 
+  deleteRecord 
+} from './baseRepository.js';
+import { createManyRecords, findManyRecords } from '../../domain/repositories/manyQueryRepository.js';
 
-export const createObstacle = async (obstacleData) => {
-  return await prisma.obstacle.create({
-    data: {
-        x: obstacleData.x,
-        y: obstacleData.y,
-        width: obstacleData.width,
-        height: obstacleData.height,
-        mapId: obstacleData.mapId,
-    },
-  });
-};
+const entity = 'obstacle';
 
-export const createMultipleObstacles = async (obstaclesData) => {
-  return await prisma.obstacle.createMany({
-    data: obstaclesData.map(obstacle => ({
-        x: obstacle.x,
-        y: obstacle.y,
-        width: obstacle.width,
-        height: obstacle.height,
-        mapId: obstacle.mapId,
-    })),
-  });
-};
+const mapObstacleData = (data) => ({
+  x: data.x,
+  y: data.y,
+  width: data.width,
+  height: data.height,
+  mapId: data.mapId,
+});
 
-export const getAllObstacles = async () => {
-  return await prisma.obstacle.findMany();
-};
+export const createObstacle = async (obstacleData) => 
+  await createRecord(entity, mapObstacleData(obstacleData));
 
-export const getObstacleById = async (id) => {
-  return await prisma.obstacle.findUnique({
-    where: { id },
-  });
-};
+export const createMultipleObstacles = async (obstaclesData) => 
+  await createManyRecords(entity, obstaclesData.map(mapObstacleData));
 
-export const updateObstacleById = async (id, updateData) => {
-  return await prisma.obstacle.update({
-    where: { id },
-    data: updateData,
-  });
-};
+export const getAllObstacles = async () => 
+  await findManyRecords(entity);
 
-export const deleteObstacleById = async (id) => {
-  return await prisma.obstacle.delete({
-    where: { id },
-  });
-};
+export const getObstacleById = async (id) => 
+  await findUniqueRecord(entity, id);
+
+export const updateObstacleById = async (id, updateData) => 
+  await updateRecord(entity, id, updateData);
+
+export const deleteObstacleById = async (id) => 
+  await deleteRecord(entity, id);

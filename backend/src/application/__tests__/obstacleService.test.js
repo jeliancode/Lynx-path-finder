@@ -1,112 +1,110 @@
-jest.mock(
-  '../../infrastructure/repositories/obstacleRepository.js',
-  () => ({
-    createObstacle: jest.fn(),
-    createMultipleObstacles: jest.fn(),
-    getAllObstacles: jest.fn(),
-    getObstacleById: jest.fn(),
-    updateObstacleById: jest.fn(),
-    deleteObstacleById: jest.fn()
-  })
-);
+import { obstacleService } from '../services/obstacleService.js';
+import { Ok, Error } from '../../domain/shared/funtional/monad.js';
 
-jest.mock(
-  '../../utils/validator/entityDataValidator.js',
-  () => ({
-    validateObstacleData: jest.fn()
-  })
-);
+jest.mock('../../domain/validator/obstacleDataValidator.js');
+jest.mock('../../domain/validator/insideMapValidator.js');
+jest.mock('../../domain/validator/listValidator.js');
 
-jest.mock(
-  '../../utils/validator/insideMapValidator.js',
-  () => ({
-    validateObstacleInsideMap: jest.fn()
-  })
-);
+import validateObstacleData from '../../domain/validator/obstacleDataValidator.js';
+import { validateObstacleInsideMap } from '../../domain/validator/insideMapValidator.js';
+import checkEach from '../../domain/validator/listValidator.js';
 
-import {
-  createNewObstacle,
-  createMultipleObstacles,
-  fetchAllObstacles,
-  fetchObstacleById,
-  modifyObstacleById,
-  removeObstacleById
-} from '../services/obstacleService.js';
+describe('Obstacle Service - Full Suite', () => {
 
-import * as obstacleRepository from '../../infrastructure/repositories/obstacleRepository.js';
-import { validateObstacleData } from '../../utils/validator/entityDataValidator.js';
-import { validateObstacleInsideMap } from '../../utils/validator/insideMapValidator.js';
-import { Ok, Error } from '../../utils/funtional/monad.js';
+  const setup = () => {
+    const mockObstacleRepository = {
+      createObstacle: jest.fn(),
+      createMultipleObstacles: jest.fn(),
+      getAllObstacles: jest.fn(),
+      getObstacleById: jest.fn(),
+      updateObstacleById: jest.fn(),
+      deleteObstacleById: jest.fn()
+    };
 
-describe('Obstacle Service', () => {
+    const service = obstacleService({
+      obstacleRepository: mockObstacleRepository
+    });
+
+    return { service, mockObstacleRepository };
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('createNewObstacle', () => {
+
     it('Should return Ok with created obstacle', async () => {
+      const { service, mockObstacleRepository } = setup();
+
       const map = { id: '1' };
-      const obstacleData = { x: 5, y: 4, width: 1, height: 2 };
+      const obstacleData = { x: 5, y: 4 };
       const createdObstacle = { id: '1', ...obstacleData };
 
       validateObstacleData.mockReturnValue(Ok(obstacleData));
       validateObstacleInsideMap.mockReturnValue(() => Ok(obstacleData));
-      obstacleRepository.createObstacle.mockResolvedValue(createdObstacle);
+      mockObstacleRepository.createObstacle.mockResolvedValue(createdObstacle);
 
-      const result = await createNewObstacle(map, obstacleData);
+      const result = await service.createNewObstacle(map, obstacleData);
 
       expect(validateObstacleData).toHaveBeenCalledWith(obstacleData);
       expect(validateObstacleInsideMap).toHaveBeenCalledWith(map);
-      expect(obstacleRepository.createObstacle).toHaveBeenCalledWith(obstacleData);
+      expect(mockObstacleRepository.createObstacle)
+        .toHaveBeenCalledWith(obstacleData);
 
       expect(result.isOk).toBe(true);
       expect(result.value).toEqual(createdObstacle);
     });
 
     it('Should return Error when obstacle data is invalid', async () => {
-      const error = new Error('Invalid obstacle data');
+      const { service, mockObstacleRepository } = setup();
 
-      validateObstacleData.mockReturnValue(Error(error));
+      const validationError = { message: 'Invalid obstacle' };
 
-      const result = await createNewObstacle({}, {});
+      validateObstacleData.mockReturnValue(Error(validationError));
+
+      const result = await service.createNewObstacle({}, {});
 
       expect(result.isError).toBe(true);
-      expect(result.value).toBe(error);
-      expect(obstacleRepository.createObstacle).not.toHaveBeenCalled();
+      expect(result.value).toEqual(validationError);
+      expect(mockObstacleRepository.createObstacle).not.toHaveBeenCalled();
     });
+
     it('Should return Error when obstacle is outside map', async () => {
-      const error = new Error('Outside map');
+      const { service } = setup();
+
+      const outsideError = { message: 'Outside map' };
 
       validateObstacleData.mockReturnValue(Ok({}));
-      validateObstacleInsideMap.mockReturnValue(() => Error(error));
+      validateObstacleInsideMap.mockReturnValue(() => Error(outsideError));
 
-      const result = await createNewObstacle({}, {});
+      const result = await service.createNewObstacle({}, {});
 
       expect(result.isError).toBe(true);
-      expect(result.value).toBe(error);
+      expect(result.value).toEqual(outsideError);
     });
+
   });
 
   describe('createMultipleObstacles', () => {
+
     it('Should return Ok when all obstacles are valid', async () => {
+      const { service, mockObstacleRepository } = setup();
       const map = { id: '1' };
-      const obstacles = [
-        { x: 1, y: 1 },
-        { x: 2, y: 2 }
-      ];
+      const obstacles = [{ x: 1 }, { x: 2 }];
+      const created = obstacles.map((o, i) => ({ id: i, ...o }));
 
-      const created = obstacles.map((o, i) => ({ id: `${i}`, ...o }));
+      checkEach.mockImplementation(() => () => Ok(obstacles));
 
-      validateObstacleData.mockImplementation(o => Ok(o));
       validateObstacleInsideMap.mockReturnValue(() => Ok(obstacles));
-      obstacleRepository.createMultipleObstacles.mockResolvedValue(created);
+      mockObstacleRepository.createMultipleObstacles
+        .mockResolvedValue(created);
 
-      const result = await createMultipleObstacles(map, obstacles);
+      const result = await service.createMultipleObstacles(map, obstacles);
 
-      expect(validateObstacleData).toHaveBeenCalledTimes(obstacles.length);
+      expect(checkEach).toHaveBeenCalled();
       expect(validateObstacleInsideMap).toHaveBeenCalledWith(map);
-      expect(obstacleRepository.createMultipleObstacles)
+      expect(mockObstacleRepository.createMultipleObstacles)
         .toHaveBeenCalledWith(obstacles);
 
       expect(result.isOk).toBe(true);
@@ -114,75 +112,123 @@ describe('Obstacle Service', () => {
     });
 
     it('Should return Error when one obstacle is invalid', async () => {
-      const error = new Error('Invalid obstacle');
+      const { service } = setup();
+      const error = { message: 'Invalid obstacle' };
 
-      validateObstacleData
-        .mockReturnValueOnce(Ok({}))
-        .mockReturnValueOnce(Error(error));
+      checkEach.mockImplementation(() => () => Error(error));
 
-      const result = await createMultipleObstacles({}, [{}, {}]);
+      const result = await service.createMultipleObstacles({}, [{}, {}]);
 
       expect(result.isError).toBe(true);
-      expect(result.value).toBe(error);
+      expect(result.value).toEqual(error);
     });
+
   });
 
   describe('fetchAllObstacles', () => {
+
     it('Should return Ok with all obstacles', async () => {
+      const { service, mockObstacleRepository } = setup();
+
       const obstacles = [{ id: '1' }];
 
-      obstacleRepository.getAllObstacles.mockResolvedValue(obstacles);
+      mockObstacleRepository.getAllObstacles
+        .mockResolvedValue(obstacles);
 
-      const result = await fetchAllObstacles();
+      const result = await service.fetchAllObstacles();
 
       expect(result.isOk).toBe(true);
       expect(result.value).toEqual(obstacles);
     });
+
   });
 
   describe('fetchObstacleById', () => {
+
     it('Should return Ok when obstacle exists', async () => {
+      const { service, mockObstacleRepository } = setup();
+
       const obstacle = { id: '1' };
 
-      obstacleRepository.getObstacleById.mockResolvedValue(obstacle);
+      mockObstacleRepository.getObstacleById
+        .mockResolvedValue(obstacle);
 
-      const result = await fetchObstacleById('1');
+      const result = await service.fetchObstacleById('1');
 
       expect(result.isOk).toBe(true);
       expect(result.value).toEqual(obstacle);
     });
 
     it('Should return Error when obstacle not found', async () => {
-      obstacleRepository.getObstacleById.mockResolvedValue(null);
+      const { service, mockObstacleRepository } = setup();
 
-      const result = await fetchObstacleById('999');
+      mockObstacleRepository.getObstacleById
+        .mockResolvedValue(null);
+
+      const result = await service.fetchObstacleById('999');
 
       expect(result.isError).toBe(true);
       expect(result.value.message).toBe('Obstacle not found');
     });
+
   });
 
   describe('modifyObstacleById', () => {
+
     it('Should return Ok when obstacle is updated', async () => {
+      const { service, mockObstacleRepository } = setup();
+
       const updated = { id: '1', width: 2 };
 
-      obstacleRepository.updateObstacleById.mockResolvedValue(updated);
+      mockObstacleRepository.updateObstacleById
+        .mockResolvedValue(updated);
 
-      const result = await modifyObstacleById('1', { width: 2 });
+      const result = await service.modifyObstacleById('1', { width: 2 });
 
       expect(result.isOk).toBe(true);
       expect(result.value).toEqual(updated);
     });
+
+    it('Should return Error when obstacle to update not found', async () => {
+      const { service, mockObstacleRepository } = setup();
+
+      mockObstacleRepository.updateObstacleById
+        .mockResolvedValue(null);
+
+      const result = await service.modifyObstacleById('1', {});
+
+      expect(result.isError).toBe(true);
+      expect(result.value.message)
+        .toBe('Obstacle to update not found');
+    });
+
   });
 
   describe('removeObstacleById', () => {
-    it('Should return Ok with delete result', async () => {
-      obstacleRepository.deleteObstacleById.mockResolvedValue(true);
 
-      const result = await removeObstacleById('1');
+    it('Should return Ok when obstacle is deleted', async () => {
+      const { service, mockObstacleRepository } = setup();
+
+      mockObstacleRepository.deleteObstacleById
+        .mockResolvedValue(true);
+
+      const result = await service.removeObstacleById('1');
 
       expect(result.isOk).toBe(true);
       expect(result.value).toBe(true);
+    });
+
+    it('Should return Error when obstacle to delete not found', async () => {
+      const { service, mockObstacleRepository } = setup();
+
+      mockObstacleRepository.deleteObstacleById
+        .mockResolvedValue(null);
+
+      const result = await service.removeObstacleById('999');
+
+      expect(result.isError).toBe(true);
+      expect(result.value.message)
+        .toBe('Obstacle to delete not found');
     });
   });
 });
