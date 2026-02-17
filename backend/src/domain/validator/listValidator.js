@@ -1,4 +1,4 @@
-import { ResultMonad } from "../shared/funtional/monad";
+import { ResultMonad } from "../shared/funtional/monad.js";
 
 const checkEach = (validator) => (list) =>
   list.reduce(

@@ -1,10 +1,9 @@
 import { 
   createRecord, 
-  createManyRecords, 
   findUniqueRecord, 
   updateRecord, 
   deleteRecord 
-} from './baseRepository.js';
+} from '../../domain/repositories/baseRepository.js';
 import { createManyRecords, findManyRecords } from '../../domain/repositories/manyQueryRepository.js';
 
 const entity = 'obstacle';
