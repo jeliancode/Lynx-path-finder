@@ -1,41 +1,35 @@
-jest.mock(
-  '../../infrastructure/repositories/userRepository.js',
-  () => ({
-    createUser: jest.fn(),
-    getAllUsers: jest.fn(),
-    getUserById: jest.fn(),
-    updateUserById: jest.fn(),
-    deleteUserById: jest.fn()
-  })
-);
+import { userService } from '../services/userService.js';
+import { Ok, Error } from '../../domain/shared/funtional/monad.js';
 
-jest.mock(
-  '../../utils/validator/entityDataValidator.js',
-  () => ({
-    validateUserData: jest.fn()
-  })
-);
+jest.mock('../../domain/validator/userDataValidator.js');
+import validateUserData from '../../domain/validator/userDataValidator.js';
 
-import {
-  createNewUser,
-  fetchAllUsers,
-  fetchUserById,
-  modifyUserById,
-  removeUserById
-} from '../services/userService.js';
+describe('User Service - Full Suite', () => {
 
-import * as userRepository from '../../infrastructure/repositories/userRepository.js';
-import { validateUserData } from '../../utils/validator/entityDataValidator.js';
-import { Ok, Error } from '../../utils/funtional/monad.js';
+  const setup = () => {
+    const mockUserRepository = {
+      createUser: jest.fn(),
+      getAllUsers: jest.fn(),
+      getUserById: jest.fn(),
+      updateUserById: jest.fn(),
+      deleteUserById: jest.fn(),
+      getUserByUsername: jest.fn()
+    };
 
-describe('User service', () => {
+    const service = userService({ userRepository: mockUserRepository });
+
+    return { service, mockUserRepository };
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('createNewUser', () => {
+
     it('Should return Ok when user is created successfully', async () => {
+      const { service, mockUserRepository } = setup();
+
       const userData = {
         username: 'jesus maldonado',
         email: 'test@gmail.com',
@@ -45,101 +39,155 @@ describe('User service', () => {
       const createdUser = { id: '1', ...userData };
 
       validateUserData.mockReturnValue(Ok(userData));
-      userRepository.createUser.mockResolvedValue(createdUser);
+      mockUserRepository.createUser.mockResolvedValue(createdUser);
 
-      const result = await createNewUser(userData);
+      const result = await service.createNewUser(userData);
 
       expect(result.isOk).toBe(true);
       expect(result.value).toEqual(createdUser);
     });
 
     it('Should return Error when user data is invalid', async () => {
+      const { service, mockUserRepository } = setup();
+
       validateUserData.mockReturnValue(
-        Error(new Error('Invalid user data'))
+        Error({ message: 'Invalid user data' })
       );
 
-      const result = await createNewUser({});
+      const result = await service.createNewUser({});
 
       expect(result.isError).toBe(true);
-      expect(userRepository.createUser).not.toHaveBeenCalled();
+      expect(mockUserRepository.createUser).not.toHaveBeenCalled();
     });
+
   });
 
   describe('fetchAllUsers', () => {
+
     it('Should return Ok with all users', async () => {
+      const { service, mockUserRepository } = setup();
+
       const users = [{ id: '1' }];
 
-      userRepository.getAllUsers.mockResolvedValue(users);
+      mockUserRepository.getAllUsers.mockResolvedValue(users);
 
-      const result = await fetchAllUsers();
+      const result = await service.fetchAllUsers();
 
       expect(result.isOk).toBe(true);
       expect(result.value).toEqual(users);
     });
+
   });
 
   describe('fetchUserById', () => {
+
     it('Should return Ok when user exists', async () => {
+      const { service, mockUserRepository } = setup();
+
       const user = { id: '1' };
 
-      userRepository.getUserById.mockResolvedValue(user);
+      mockUserRepository.getUserById.mockResolvedValue(user);
 
-      const result = await fetchUserById('1');
+      const result = await service.fetchUserById('1');
 
       expect(result.isOk).toBe(true);
       expect(result.value).toEqual(user);
     });
 
     it('Should return Error when user does not exist', async () => {
-      userRepository.getUserById.mockResolvedValue(null);
+      const { service, mockUserRepository } = setup();
 
-      const result = await fetchUserById('999');
+      mockUserRepository.getUserById.mockResolvedValue(null);
+
+      const result = await service.fetchUserById('999');
 
       expect(result.isError).toBe(true);
       expect(result.value.message).toBe('User not found');
     });
+
   });
 
   describe('modifyUserById', () => {
+
     it('Should return Ok when user is updated', async () => {
+      const { service, mockUserRepository } = setup();
+
       const updateData = { username: 'julian' };
       const updatedUser = { id: '1', ...updateData };
 
-      userRepository.updateUserById.mockResolvedValue(updatedUser);
+      mockUserRepository.updateUserById.mockResolvedValue(updatedUser);
 
-      const result = await modifyUserById('1', updateData);
+      const result = await service.modifyUserById('1', updateData);
 
       expect(result.isOk).toBe(true);
       expect(result.value).toEqual(updatedUser);
     });
 
     it('Should return Error when user to update does not exist', async () => {
-      userRepository.updateUserById.mockResolvedValue(null);
+      const { service, mockUserRepository } = setup();
 
-      const result = await modifyUserById('999', {});
+      mockUserRepository.updateUserById.mockResolvedValue(null);
+
+      const result = await service.modifyUserById('999', {});
 
       expect(result.isError).toBe(true);
       expect(result.value.message).toBe('User to update not found');
     });
+
   });
 
   describe('removeUserById', () => {
-    it('Should return Ok when user is deleted', async () => {
-      userRepository.deleteUserById.mockResolvedValue(true);
 
-      const result = await removeUserById('1');
+    it('Should return Ok when user is deleted', async () => {
+      const { service, mockUserRepository } = setup();
+
+      mockUserRepository.deleteUserById.mockResolvedValue(true);
+
+      const result = await service.removeUserById('1');
 
       expect(result.isOk).toBe(true);
       expect(result.value).toBe(true);
     });
 
     it('Should return Error when user to delete does not exist', async () => {
-      userRepository.deleteUserById.mockResolvedValue(null);
+      const { service, mockUserRepository } = setup();
 
-      const result = await removeUserById('999');
+      mockUserRepository.deleteUserById.mockResolvedValue(null);
+
+      const result = await service.removeUserById('999');
 
       expect(result.isError).toBe(true);
       expect(result.value.message).toBe('User to delete not found');
     });
+
   });
+
+  describe('fetchUserByUsername', () => {
+
+    it('Should return Ok when user exists by username', async () => {
+      const { service, mockUserRepository } = setup();
+
+      const user = { id: '1', username: 'jesus' };
+
+      mockUserRepository.getUserByUsername.mockResolvedValue(user);
+
+      const result = await service.fetchUserByUsername('jesus');
+
+      expect(result.isOk).toBe(true);
+      expect(result.value).toEqual(user);
+    });
+
+    it('Should return Error when user not found by username', async () => {
+      const { service, mockUserRepository } = setup();
+
+      mockUserRepository.getUserByUsername.mockResolvedValue(null);
+
+      const result = await service.fetchUserByUsername('unknown');
+
+      expect(result.isError).toBe(true);
+      expect(result.value.message).toBe('User not found by username');
+    });
+
+  });
+
 });

@@ -1,38 +1,34 @@
-import prisma from '../prisma.js';
+import { 
+  createRecord, 
+  findManyRecords, 
+  findUniqueRecord, 
+  updateRecord, 
+  deleteRecord 
+} from './baseRepository.js';
 
-export const createRoute = async (routeData) => {
-  return await prisma.route.create({
-    data: {
-        mapId: routeData.mapId,
-        startX: routeData.startX,
-        startY: routeData.startY,
-        endX: routeData.endX,
-        endY: routeData.endY,
-        distance: routeData.distance,
-        path: routeData.path,
-    },
-  });
-};
+const entity = 'route';
 
-export const getAllRoutes = async () => {
-  return await prisma.route.findMany();
-};
+const mapRouteData = (data) => ({
+  mapId: data.mapId,
+  startX: data.startX,
+  startY: data.startY,
+  endX: data.endX,
+  endY: data.endY,
+  distance: data.distance,
+  path: data.path,
+});
 
-export const getRouteById = async (id) => {
-  return await prisma.route.findUnique({
-    where: { id },
-  });
-};
+export const createRoute = async (routeData) => 
+  await createRecord(entity, mapRouteData(routeData));
 
-export const updateRouteById = async (id, updateData) => {
-  return await prisma.route.update({
-    where: { id },
-    data: updateData,
-  });
-};
+export const getAllRoutes = async () => 
+  await findManyRecords(entity);
 
-export const deleteRouteById = async (id) => {
-  return await prisma.route.delete({
-    where: { id },
-  });
-};
+export const getRouteById = async (id) => 
+  await findUniqueRecord(entity, id);
+
+export const updateRouteById = async (id, updateData) => 
+  await updateRecord(entity, id, updateData);
+
+export const deleteRouteById = async (id) => 
+  await deleteRecord(entity, id);

@@ -1,77 +1,98 @@
-import * as routeRepository from '../../infrastructure/repositories/routeRepository.js';
-import { buildRouteThroughWaypoints } from '../../utils/pathFinder/routeBuilder.js';
-import { validateWaypointsReachable } from '../../utils/validator/reachableWaypointValidator.js';
-import { validateMapConfiguration } from '../../utils/validator/mapConfigValidator.js';
-import { validateStartEndPoints } from '../../utils/validator/routePointsValidator.js';
-import { notFoundError } from '../../utils/error/httpError.js';
-import { Ok, Error, fromPromise, ResultMonad } from '../../utils/funtional/monad.js';
-import pipe from '../../utils/funtional/pipe.js';
+import buildRouteThroughWaypoints from '../../domain/pathFinder/routeBuilder.js';
+import { aStarPathfinder } from '../../domain/pathFinder/aStarAlgorithm.js';
+import { manhattanDistance } from '../../domain/pathFinder/heuristics.js';
+import getValidNeighbors from '../../domain/pathFinder/pathfindingNeighbors.js';
+import { validateWaypointsReachable } from '../../domain/validator/reachableWaypointValidator.js';
+import { validateMapConfiguration } from '../../domain/validator/mapConfigValidator.js';
+import { validateStartEndPoints } from '../../domain/validator/routePointsValidator.js';
+import { notFoundError } from '../../domain/shared/error/httpError.js';
+import { Ok, Error, fromPromise, ResultMonad } from '../../domain/shared/funtional/monad.js';
+import pipe from '../../domain/shared/funtional/pipe.js';
 
 const ensureFound = (errorMsg) => (data) => 
   data ? Ok(data) : Error(notFoundError(errorMsg));
 
-export const createNewRoute = (routeData, map) =>
-  pipe(
-    () => validateMapConfiguration(map),
-    () => {
-      const startPoint = { x: routeData.startX, y: routeData.startY };
-      const endPoint = { x: routeData.endX, y: routeData.endY };
-      return validateStartEndPoints(map.obstacles)(startPoint)(endPoint);
-    },
-    () => {
-      const waypoints = map.waypoints.map(wp => ({ x: wp.x, y: wp.y }));
-      const { path, distance } = buildRouteThroughWaypoints(
-        { width: map.width, height: map.height, obstacles: map.obstacles },
-        { x: routeData.startX, y: routeData.startY },
-        waypoints,
-        { x: routeData.endX, y: routeData.endY }
-      );
-      return Ok({ ...routeData, distance, path });
-    },
-    (completeData) => fromPromise(() => routeRepository.createRoute(completeData))
-  )();
+const createPathfinder = (map) => {
+  const neighbors = getValidNeighbors({ width: map.width, height: map.height, obstacles: map.obstacles });
+  const strategy = aStarPathfinder(manhattanDistance)(neighbors);
+  return buildRouteThroughWaypoints(strategy);
+};
 
-export const validateRouteWaypoints = (routeId, map) =>
-  fromPromise(() => routeRepository.getRouteById(routeId))
-    .then(result => ResultMonad.chain(ensureFound('Route not found'))(result))
-    .then(result => ResultMonad.chain(route => 
-       validateWaypointsReachable(route.path)(map.waypoints)
-    )(result));
+const getPoint = (data, prefix = 'start', fallback = {}) => ({
+  x: data[`${prefix}X`] ?? fallback[`${prefix}X`],
+  y: data[`${prefix}Y`] ?? fallback[`${prefix}Y`]
+});
 
-export const fetchAllRoutes = () => 
-  fromPromise(() => routeRepository.getAllRoutes());
+export const routeService = ({ routeRepository }) => ({
 
-export const fetchRouteById = (id) =>
-  fromPromise(() => routeRepository.getRouteById(id))
-    .then(result => ResultMonad.chain(ensureFound('Route not found'))(result));
+  createNewRoute: (routeData, map) => {
+    const routeBuilder = createPathfinder(map);
 
-export const modifyRouteById = (id, updateData, map) =>
-  fromPromise(() => routeRepository.getRouteById(id))
-    .then(result => ResultMonad.chain(ensureFound('Route to update not found'))(result))
-    .then(result => ResultMonad.chain(existingRoute => {
-      return pipe(
-        () => validateMapConfiguration(map),
-        () => {
-          const start = { x: updateData.startX ?? existingRoute.startX, y: updateData.startY ?? existingRoute.startY };
-          const end = { x: updateData.endX ?? existingRoute.endX, y: updateData.endY ?? existingRoute.endY };
-          return validateStartEndPoints(map.obstacles)(start)(end);
-        },
-        () => {
-          const start = { x: updateData.startX ?? existingRoute.startX, y: updateData.startY ?? existingRoute.startY };
-          const end = { x: updateData.endX ?? existingRoute.endX, y: updateData.endY ?? existingRoute.endY };
-          const { path, distance } = buildRouteThroughWaypoints(
-            { width: map.width, height: map.height, obstacles: map.obstacles },
-            start, 
-            map.waypoints.map(wp => ({ x: wp.x, y: wp.y })), 
-            end
-          );
-          return Ok({ ...updateData, startX: start.x, startY: start.y, endX: end.x, endY: end.y, path, distance });
-        }
-      )();
-    })(result))
-    .then(result => ResultMonad.chain(completeUpdate => 
-      fromPromise(() => routeRepository.updateRouteById(id, completeUpdate))
-    )(result));
+    return pipe(
+      () => validateMapConfiguration(map),
+      () => {
+        const start = getPoint(routeData, 'start');
+        const end = getPoint(routeData, 'end');
+        return validateStartEndPoints(map.obstacles)(start)(end);
+      },
+      () => {
+        const start = getPoint(routeData, 'start');
+        const end = getPoint(routeData, 'end');
+        const waypoints = map.waypoints.map(wp => ({ x: wp.x, y: wp.y }));
+        
+        const { path, distance } = routeBuilder(start, waypoints, end);
+        return Ok({ ...routeData, distance, path });
+      },
+      (completeData) => fromPromise(() => routeRepository.createRoute(completeData))
+    )();
+  },
 
-export const removeRouteById = (id) =>
-  fromPromise(() => routeRepository.deleteRouteById(id));
+  modifyRouteById: (id, updateData, map) => {
+    const routeBuilder = createPathfinder(map);
+
+    return fromPromise(() => routeRepository.getRouteById(id))
+      .then(result => ResultMonad.chain(ensureFound('Route to update not found'))(result))
+      .then(result => ResultMonad.chain(existingRoute => 
+        pipe(
+          () => validateMapConfiguration(map),
+          () => {
+            const start = getPoint(updateData, 'start', existingRoute);
+            const end = getPoint(updateData, 'end', existingRoute);
+            return validateStartEndPoints(map.obstacles)(start)(end);
+          },
+          () => {
+            const start = getPoint(updateData, 'start', existingRoute);
+            const end = getPoint(updateData, 'end', existingRoute);
+            const waypoints = map.waypoints.map(wp => ({ x: wp.x, y: wp.y }));
+
+            const { path, distance } = routeBuilder(start, waypoints, end);
+
+            return Ok({ 
+              ...updateData, 
+              ...start.x && { startX: start.x, startY: start.y },
+              ...end.x && { endX: end.x, endY: end.y },
+              path, distance 
+            });
+          }
+        )()
+      )(result))
+      .then(result => ResultMonad.chain(completeUpdate => 
+        fromPromise(() => routeRepository.updateRouteById(id, completeUpdate))
+      )(result));
+  },
+
+  validateRouteWaypoints: (routeId, map) =>
+    fromPromise(() => routeRepository.getRouteById(routeId))
+      .then(result => ResultMonad.chain(ensureFound('Route not found'))(result))
+      .then(result => ResultMonad.chain(route => validateWaypointsReachable(route.path)(map.waypoints))(result)),
+
+  fetchAllRoutes: () => fromPromise(() => routeRepository.getAllRoutes()),
+
+  fetchRouteById: (id) =>
+    fromPromise(() => routeRepository.getRouteById(id))
+      .then(result => ResultMonad.chain(ensureFound('Route not found'))(result)),
+
+  removeRouteById: (id) =>
+    fromPromise(() => routeRepository.deleteRouteById(id))
+      .then(result => ResultMonad.chain(ensureFound('Route to delete not found'))(result)),
+});

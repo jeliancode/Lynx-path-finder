@@ -1,14 +1,16 @@
 import express from 'express';
-import * as waypointController from '../controllers/waypointController.js';
+import { container } from '../../infrastructure/container.js';
+import { waypointController } from '../controllers/waypointController.js';
 
 const router = express.Router({ mergeParams: true });
+const controller = waypointController(container.waypointService);
 
 router
-    .post('/', waypointController.createWaypoint)
-    .post('/bulk', waypointController.createMultipleWaypoints)
-    .get('/', waypointController.getAllWaypoints)
-    .get('/:id', waypointController.getWaypointById)
-    .put('/:id', waypointController.updateWaypoint)
-    .delete('/:id', waypointController.deleteWaypoint);
+    .post('/', controller.createWaypoint)
+    .post('/bulk', controller.createMultipleWaypoints)
+    .get('/', controller.getAllWaypoints)
+    .get('/:id', controller.getWaypointById)
+    .put('/:id', controller.updateWaypoint)
+    .delete('/:id', controller.deleteWaypoint);
     
 export default router;

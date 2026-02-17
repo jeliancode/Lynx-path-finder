@@ -1,6 +1,6 @@
 import validateWith  from './validator.js';
-import pipe from '../funtional/pipe.js';
-import { unprocessableEntityError } from '../error/httpError.js';
+import pipe from '../shared/funtional/pipe.js';
+import { unprocessableEntityError } from '../shared/error/httpError.js';
 
 const hasObstacles = (map) =>
   Array.isArray(map.obstacles) && map.obstacles.length > 0;

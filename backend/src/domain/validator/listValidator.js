@@ -1,0 +1,12 @@
+import { ResultMonad } from "../shared/funtional/monad";
+
+const checkEach = (validator) => (list) =>
+  list.reduce(
+    (acc, item) =>
+      ResultMonad.chain(() =>
+        ResultMonad.map(() => list)(validator(item))
+      )(acc),
+    Ok(list)
+  );
+
+export default checkEach;

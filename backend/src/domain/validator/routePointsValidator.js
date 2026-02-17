@@ -1,6 +1,6 @@
 import validateWith from './validator.js';
-import { unprocessableEntityError } from '../error/httpError.js';
-import { ResultMonad, Ok } from '../funtional/monad.js';
+import { unprocessableEntityError } from '../shared/error/httpError.js';
+import { ResultMonad, Ok } from '../shared/funtional/monad.js';
 
 const toKey = ({ x, y }) => `${x},${y}`;
 
