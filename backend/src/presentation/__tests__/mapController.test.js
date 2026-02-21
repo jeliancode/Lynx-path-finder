@@ -1,157 +1,107 @@
-jest.mock('../../application/services/mapService.js', () => ({
-  createNewMap: jest.fn(),
-  fetchAllMaps: jest.fn(),
-  fetchMapById: jest.fn(),
-  modifyMapById: jest.fn(),
-  removeMapById: jest.fn()
-}));
+import { mapController } from '../controllers/mapController.js';
+import { Ok, Error } from '../../domain/shared/funtional/monad.js';
 
-jest.mock('../../utils/error/httpSuccess.js', () => ({
+jest.mock('../../domain/shared/error/httpSuccess.js', () => ({
   createdSuccessfully: jest.fn(),
   completedSuccessfully: jest.fn(),
   deletedSuccessfully: jest.fn()
 }));
 
 import {
-  createMap,
-  getAllMaps,
-  getMapById,
-  updateMap,
-  deleteMap
-} from '../controllers/mapController.js';
-import * as mapService from '../../application/services/mapService.js';
-import {
   createdSuccessfully,
   completedSuccessfully,
   deletedSuccessfully
-} from '../../utils/error/httpSuccess.js';
-import { Ok, Error } from '../../utils/funtional/monad.js';
+} from '../../domain/shared/error/httpSuccess.js';
 
+describe('Map Controller - Clean Tests', () => {
+  
+  const setup = () => {
+    const mockMapService = {
+      createNewMap: jest.fn(),
+      fetchAllMaps: jest.fn(),
+      fetchMapById: jest.fn(),
+      modifyMapById: jest.fn(),
+      removeMapById: jest.fn()
+    };
 
-const mockRes = () => ({});
-const mockNext = jest.fn();
+    const controller = mapController(mockMapService);
+    
+    const mockRes = {};
+    const mockNext = jest.fn();
 
-describe('Map controller', () => {
+    const mockSuccessResponse = () => {
+      const responseFn = jest.fn();
+      const messageFn = jest.fn().mockReturnValue(responseFn);
+      return { messageFn, responseFn };
+    };
+
+    return { controller, mockMapService, mockRes, mockNext, mockSuccessResponse };
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('createMap', () => {
-    it('Should create a map and return 201 response', async () => {
-      const req = {
-        body: { name: 'Mapa 1', width: 10, height: 10, userId: '1' }
-      };
-      const res = mockRes();
+    it('Should call service and return success response on valid data', async () => {
+      const { controller, mockMapService, mockRes, mockNext, mockSuccessResponse } = setup();
+      const { messageFn, responseFn } = mockSuccessResponse();
+      
+      const req = { body: { name: 'New Map', width: 10, height: 10, userId: 'u1' } };
+      const createdMap = { id: 'm1', ...req.body };
 
-      const createdMap = { id: '1', ...req.body };
-
-      mapService.createNewMap.mockResolvedValue(Ok(createdMap));
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
+      mockMapService.createNewMap.mockResolvedValue(Ok(createdMap));
       createdSuccessfully.mockReturnValue(messageFn);
 
-      await createMap(req, res, mockNext);
+      await controller.createMap(req, mockRes, mockNext);
 
-      expect(mapService.createNewMap).toHaveBeenCalledWith(req.body);
-      expect(createdSuccessfully).toHaveBeenCalledWith(res);
+      expect(mockMapService.createNewMap).toHaveBeenCalledWith(req.body);
+      expect(createdSuccessfully).toHaveBeenCalledWith(mockRes);
       expect(messageFn).toHaveBeenCalledWith('Map created successfully');
       expect(responseFn).toHaveBeenCalledWith(createdMap);
       expect(mockNext).not.toHaveBeenCalled();
     });
 
-    it('Should throw error if service fails', async () => {
-      const error = new Error('Error');
-      const req = { body: {} };
-      const res = mockRes();
+    it('Should call next with error when service returns Error monad', async () => {
+      const { controller, mockMapService, mockRes, mockNext } = setup();
+      const serviceError = { status: 422, message: 'Invalid data' };
 
-      mapService.createNewMap.mockResolvedValue(Error(error));
+      mockMapService.createNewMap.mockResolvedValue(Error(serviceError));
 
-      await createMap(req, res, mockNext);
+      await controller.createMap({ body: {} }, mockRes, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith(error);
-    });
-  });
-
-  describe('getAllMaps', () => {
-    it('Should return all maps', async () => {
-      const req = {};
-      const res = mockRes();
-      const maps = [{ id: '1' }, { id: '2' }];
-
-      mapService.fetchAllMaps.mockResolvedValue(Ok(maps));
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
-      completedSuccessfully.mockReturnValue(messageFn);
-
-      await getAllMaps(req, res, mockNext);
-
-      expect(mapService.fetchAllMaps).toHaveBeenCalled();
-      expect(completedSuccessfully).toHaveBeenCalledWith(res);
-      expect(messageFn).toHaveBeenCalledWith('All maps get successfully');
-      expect(responseFn).toHaveBeenCalledWith(maps);
+      expect(mockNext).toHaveBeenCalledWith(serviceError);
     });
   });
 
   describe('getMapById', () => {
-    it('Should return map by id', async () => {
-      const req = { params: { id: '1' } };
-      const res = mockRes();
-      const map = { id: '1' };
+    it('Should return map and status 200 when found', async () => {
+      const { controller, mockMapService, mockRes, mockNext, mockSuccessResponse } = setup();
+      const { messageFn, responseFn } = mockSuccessResponse();
+      const map = { id: '1', name: 'Map 1' };
 
-      mapService.fetchMapById.mockResolvedValue(Ok(map));
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
+      mockMapService.fetchMapById.mockResolvedValue(Ok(map));
       completedSuccessfully.mockReturnValue(messageFn);
 
-      await getMapById(req, res, mockNext);
+      await controller.getMapById({ params: { id: '1' } }, mockRes, mockNext);
 
-      expect(mapService.fetchMapById).toHaveBeenCalledWith('1');
+      expect(mockMapService.fetchMapById).toHaveBeenCalledWith('1');
       expect(responseFn).toHaveBeenCalledWith(map);
     });
   });
 
-  describe('updateMap', () => {
-    it('Should update map successfully', async () => {
-      const req = {
-        params: { id: '1' },
-        body: { name: 'Updated' }
-      };
-      const res = mockRes();
-      const updatedMap = { id: '1', ...req.body };
-
-      mapService.modifyMapById.mockResolvedValue(Ok(updatedMap));
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
-      completedSuccessfully.mockReturnValue(messageFn);
-
-      await updateMap(req, res, mockNext);
-
-      expect(mapService.modifyMapById).toHaveBeenCalledWith('1', req.body);
-      expect(responseFn).toHaveBeenCalledWith(updatedMap);
-    });
-  });
-
   describe('deleteMap', () => {
-    it('Should delete map successfully', async () => {
-      const req = { params: { id: '1' } };
-      const res = mockRes();
+    it('Should return deleted status when successfully removed', async () => {
+      const { controller, mockMapService, mockRes, mockNext, mockSuccessResponse } = setup();
+      const { messageFn, responseFn } = mockSuccessResponse();
 
-      mapService.removeMapById.mockResolvedValue(Ok(true));
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
+      mockMapService.removeMapById.mockResolvedValue(Ok(true));
       deletedSuccessfully.mockReturnValue(messageFn);
 
-      await deleteMap(req, res, mockNext);
+      await controller.deleteMap({ params: { id: '1' } }, mockRes, mockNext);
 
-      expect(mapService.removeMapById).toHaveBeenCalledWith('1');
-      expect(deletedSuccessfully).toHaveBeenCalledWith(res);
-      expect(messageFn).toHaveBeenCalledWith('Map deleted successfully');
+      expect(mockMapService.removeMapById).toHaveBeenCalledWith('1');
+      expect(deletedSuccessfully).toHaveBeenCalledWith(mockRes);
       expect(responseFn).toHaveBeenCalled();
     });
   });

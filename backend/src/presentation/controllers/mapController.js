@@ -1,5 +1,8 @@
-import { ResultMonad } from '../../utils/funtional/monad.js';
-import { createdSuccessfully, completedSuccessfully, deletedSuccessfully } from '../../utils/error/httpSuccess.js';
+import { ResultMonad } from '../../domain/shared/funtional/monad.js';
+import { 
+    createdSuccessfully, 
+    completedSuccessfully, 
+    deletedSuccessfully } from '../../domain/shared/error/httpSuccess.js';
 
 export const mapController = (mapService) => ({
     createMap: async (req, res, next) => {

@@ -3,7 +3,7 @@ import {
   findUniqueRecord, 
   updateRecord, 
   deleteRecord 
-} from './baseRepository.js';
+} from '../../domain/repositories//baseRepository.js';
 import { findManyRecords, createManyRecords } from '../../domain/repositories/manyQueryRepository.js';
 
 const entity = 'waypoint';

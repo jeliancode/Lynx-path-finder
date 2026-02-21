@@ -3,7 +3,7 @@ import {
   findUniqueRecord, 
   updateRecord, 
   deleteRecord 
-} from './baseRepository.js';
+} from '../../domain/repositories/baseRepository.js';
 import { findManyRecords } from '../../domain/repositories/manyQueryRepository.js';
 import prisma from '../prisma.js';
 

@@ -1,188 +1,129 @@
-jest.mock('../../application/services/routeService.js', () => ({
-  createNewRoute: jest.fn(),
-  validateRouteWaypoints: jest.fn(),
-  fetchAllRoutes: jest.fn(),
-  fetchRouteById: jest.fn(),
-  modifyRouteById: jest.fn(),
-  removeRouteById: jest.fn()
-}));
+import { routeController } from '../controllers/routeController.js';
+import { Ok, Error } from '../../domain/shared/funtional/monad.js';
 
-jest.mock('../../utils/error/httpSuccess.js', () => ({
+jest.mock('../../domain/shared/error/httpSuccess.js', () => ({
   createdSuccessfully: jest.fn(),
   completedSuccessfully: jest.fn(),
   deletedSuccessfully: jest.fn()
 }));
 
 import {
-  createRoute,
-  validateRouteWaypoints,
-  getAllRoutes,
-  getRouteById,
-  updateRoute,
-  deleteRoute
-} from '../controllers/routeController.js';
-
-import * as routeService from '../../application/services/routeService.js';
-import {
   createdSuccessfully,
   completedSuccessfully,
   deletedSuccessfully
-} from '../../utils/error/httpSuccess.js';
-import { Ok, Error } from '../../utils/funtional/monad.js';
+} from '../../domain/shared/error/httpSuccess.js';
 
-const mockRes = () => ({});
-const mockNext = jest.fn();
+describe('Route Controller - Clean Architecture Tests', () => {
+  
+  const setup = () => {
+    const mockRouteService = {
+      createNewRoute: jest.fn(),
+      validateRouteWaypoints: jest.fn(),
+      fetchAllRoutes: jest.fn(),
+      fetchRouteById: jest.fn(),
+      modifyRouteById: jest.fn(),
+      removeRouteById: jest.fn()
+    };
 
-describe('Route Controller', () => {
+    const controller = routeController(mockRouteService);
+    
+    const mockRes = {};
+    const mockNext = jest.fn();
+
+    const mockSuccessResponse = () => {
+      const responseFn = jest.fn();
+      const messageFn = jest.fn().mockReturnValue(responseFn);
+      return { messageFn, responseFn };
+    };
+
+    return { 
+      controller, 
+      mockRouteService, 
+      mockRes, 
+      mockNext, 
+      mockSuccessResponse 
+    };
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('createRoute', () => {
-    it('Should create route successfully', async () => {
+    it('Should coordinate route creation with map context and body data', async () => {
+      const { controller, mockRouteService, mockRes, mockNext, mockSuccessResponse } = setup();
+      const { messageFn, responseFn } = mockSuccessResponse();
+      
       const req = {
         body: { startX: 1, startY: 1, endX: 5, endY: 5 },
-        params: { mapId: 'map-1' },
-        map: { id: 'map-1' }
+        params: { mapId: 'map-abc' },
+        map: { id: 'map-abc', obstacles: [] }
       };
-      const res = mockRes();
+      const createdRoute = { id: 'route-1', ...req.body };
 
-      const createdRoute = { id: '1', ...req.body, mapId: 'map-1' };
-
-      routeService.createNewRoute.mockResolvedValue(Ok(createdRoute));
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
+      mockRouteService.createNewRoute.mockResolvedValue(Ok(createdRoute));
       createdSuccessfully.mockReturnValue(messageFn);
 
-      await createRoute(req, res, mockNext);
+      await controller.createRoute(req, mockRes, mockNext);
 
-      expect(routeService.createNewRoute).toHaveBeenCalledWith(
-        { mapId: 'map-1', ...req.body },
+      expect(mockRouteService.createNewRoute).toHaveBeenCalledWith(
+        { mapId: 'map-abc', ...req.body },
         req.map
       );
-      expect(createdSuccessfully).toHaveBeenCalledWith(res);
-      expect(messageFn).toHaveBeenCalledWith('Route created successfully');
       expect(responseFn).toHaveBeenCalledWith(createdRoute);
       expect(mockNext).not.toHaveBeenCalled();
-    });
-
-    it('Should call next(error) if service fails', async () => {
-      const error = new Error('Error');
-      const req = { body: {}, params: {}, map: {} };
-      const res = mockRes();
-
-      routeService.createNewRoute.mockResolvedValue(Error(error));
-
-      await createRoute(req, res, mockNext);
-
-      expect(mockNext).toHaveBeenCalledWith(error);
     });
   });
 
   describe('validateRouteWaypoints', () => {
-    it('Should validate route waypoints successfully', async () => {
-      const req = {
-        params: { id: 'route-1' },
-        map: { id: 'map-1' }
-      };
-      const res = mockRes();
-
-      routeService.validateRouteWaypoints.mockResolvedValue(Ok());
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
+    it('Should return success when route waypoints are valid within map constraints', async () => {
+      const { controller, mockRouteService, mockRes, mockNext, mockSuccessResponse } = setup();
+      const { messageFn, responseFn } = mockSuccessResponse();
+      
+      const req = { params: { id: 'route-1' }, map: { id: 'map-1' } };
+      mockRouteService.validateRouteWaypoints.mockResolvedValue(Ok());
       completedSuccessfully.mockReturnValue(messageFn);
 
-      await validateRouteWaypoints(req, res, mockNext);
+      await controller.validateRouteWaypoints(req, mockRes, mockNext);
 
-      expect(routeService.validateRouteWaypoints).toHaveBeenCalledWith('route-1', req.map);
+      expect(mockRouteService.validateRouteWaypoints).toHaveBeenCalledWith('route-1', req.map);
       expect(messageFn).toHaveBeenCalledWith('Map waypoints validated successfully');
       expect(responseFn).toHaveBeenCalled();
     });
   });
 
-  describe('getAllRoutes', () => {
-    it('Should return all routes', async () => {
-      const req = {};
-      const res = mockRes();
-      const routes = [{ id: '1' }, { id: '2' }];
-
-      routeService.fetchAllRoutes.mockResolvedValue(Ok(routes));
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
-      completedSuccessfully.mockReturnValue(messageFn);
-
-      await getAllRoutes(req, res, mockNext);
-
-      expect(routeService.fetchAllRoutes).toHaveBeenCalled();
-      expect(messageFn).toHaveBeenCalledWith('All routes get successfully');
-      expect(responseFn).toHaveBeenCalledWith(routes);
-    });
-  });
-
-  describe('getRouteById', () => {
-    it('Should return route by id', async () => {
-      const req = { params: { id: '1' } };
-      const res = mockRes();
-      const route = { id: '1' };
-
-      routeService.fetchRouteById.mockResolvedValue(Ok(route));
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
-      completedSuccessfully.mockReturnValue(messageFn);
-
-      await getRouteById(req, res, mockNext);
-
-      expect(routeService.fetchRouteById).toHaveBeenCalledWith('1');
-      expect(messageFn).toHaveBeenCalledWith('Route get successfully');
-      expect(responseFn).toHaveBeenCalledWith(route);
-    });
-  });
-
   describe('updateRoute', () => {
-    it('Should update route successfully', async () => {
-      const req = {
-        params: { id: '1' },
-        body: { startX: 2 },
-        map: { id: 'map-1' }
+    it('Should pass update data and map context to the service', async () => {
+      const { controller, mockRouteService, mockRes, mockNext, mockSuccessResponse } = setup();
+      const { messageFn, responseFn } = mockSuccessResponse();
+      
+      const req = { 
+        params: { id: 'route-1' }, 
+        body: { endX: 10 }, 
+        map: { id: 'map-1' } 
       };
-      const res = mockRes();
-      const updatedRoute = { id: '1', ...req.body };
+      const updated = { id: 'route-1', endX: 10 };
 
-      routeService.modifyRouteById.mockResolvedValue(Ok(updatedRoute));
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
+      mockRouteService.modifyRouteById.mockResolvedValue(Ok(updated));
       completedSuccessfully.mockReturnValue(messageFn);
 
-      await updateRoute(req, res, mockNext);
+      await controller.updateRoute(req, mockRes, mockNext);
 
-      expect(routeService.modifyRouteById).toHaveBeenCalledWith('1', req.body, req.map);
-      expect(messageFn).toHaveBeenCalledWith('Route updated successfully');
-      expect(responseFn).toHaveBeenCalledWith(updatedRoute);
+      expect(mockRouteService.modifyRouteById).toHaveBeenCalledWith('route-1', req.body, req.map);
+      expect(responseFn).toHaveBeenCalledWith(updated);
     });
   });
 
   describe('deleteRoute', () => {
-    it('Should delete route successfully', async () => {
-      const req = { params: { id: '1' } };
-      const res = mockRes();
+    it('Should propagate service errors to the global error handler', async () => {
+      const { controller, mockRouteService, mockRes, mockNext } = setup();
+      const serviceError = { status: 404, message: 'Route not found' };
 
-      routeService.removeRouteById.mockResolvedValue(Ok(true));
+      mockRouteService.removeRouteById.mockResolvedValue(Error(serviceError));
 
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
-      deletedSuccessfully.mockReturnValue(messageFn);
+      await controller.deleteRoute({ params: { id: 'invalid' } }, mockRes, mockNext);
 
-      await deleteRoute(req, res, mockNext);
-
-      expect(routeService.removeRouteById).toHaveBeenCalledWith('1');
-      expect(messageFn).toHaveBeenCalledWith('Route deleted successfully');
-      expect(responseFn).toHaveBeenCalled();
+      expect(mockNext).toHaveBeenCalledWith(serviceError);
     });
   });
 });

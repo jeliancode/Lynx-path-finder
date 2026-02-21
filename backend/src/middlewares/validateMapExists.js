@@ -1,8 +1,8 @@
 import { getMapById } from '../infrastructure/repositories/mapRepository.js';
-import validateWith from '../utils/validator/validator.js';
-import { unprocessableEntityError, notFoundError } from '../utils/error/httpError.js'
-import { ResultMonad, fromPromise, Ok } from '../utils/funtional/monad.js';
-import pipe from '../utils/funtional/pipe.js';
+import validateWith from '../domain/validator/validator.js';
+import { unprocessableEntityError, notFoundError } from '../domain/shared/error/httpError.js'
+import { ResultMonad, fromPromise, Ok } from '../domain/shared/funtional/monad.js';
+import pipe from '../domain/shared/funtional/pipe.js';
 
 const existsMapId = (mapId) => mapId != null;
 const isMapFound = (map) => map != null;

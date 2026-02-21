@@ -1,4 +1,4 @@
-import prisma from '../prisma.js';
+import prisma from '../../infrastructure/prisma.js';
 
 export const createManyRecords = (entity, data) => 
   prisma[entity].createMany({ data });
