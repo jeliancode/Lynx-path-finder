@@ -1,6 +1,6 @@
 import { validateMapConfiguration } from '../validator/mapConfigValidator.js';
-import { unprocessableEntityError } from '../error/httpError.js';
-import { Ok, Error } from '../funtional/monad.js';
+import { unprocessableEntityError } from '../shared/error/httpError.js';
+import { Ok, Error } from '../shared/funtional/monad.js';
 
 
 describe('validateMapConfiguration validator', () => {

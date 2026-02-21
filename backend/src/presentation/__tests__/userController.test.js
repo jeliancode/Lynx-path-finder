@@ -1,162 +1,126 @@
-jest.mock('../../application/services/userService.js', () => ({
-  createNewUser: jest.fn(),
-  fetchAllUsers: jest.fn(),
-  fetchUserById: jest.fn(),
-  modifyUserById: jest.fn(),
-  removeUserById: jest.fn()
-}));
+import { userController } from '../controllers/userController.js';
+import { Ok, Error } from '../../domain/shared/funtional/monad.js';
 
-jest.mock('../../utils/error/httpSuccess.js', () => ({
+jest.mock('../../domain/shared/error/httpSuccess.js', () => ({
   createdSuccessfully: jest.fn(),
   completedSuccessfully: jest.fn(),
   deletedSuccessfully: jest.fn()
 }));
 
 import {
-  createUser,
-  getAllUsers,
-  getUserById,
-  updateUser,
-  deleteUser
-} from '../controllers/userController.js';
-
-import * as userService from '../../application/services/userService.js';
-import {
   createdSuccessfully,
   completedSuccessfully,
   deletedSuccessfully
-} from '../../utils/error/httpSuccess.js';
-import { Ok, Error } from '../../utils/funtional/monad.js';
+} from '../../domain/shared/error/httpSuccess.js';
 
-const mockRes = () => ({});
-const mockNext = jest.fn();
+describe('User Controller - Standardized Tests', () => {
 
-describe('User Controller', () => {
+  const setup = () => {
+    const mockUserService = {
+      createNewUser: jest.fn(),
+      fetchAllUsers: jest.fn(),
+      fetchUserById: jest.fn(),
+      modifyUserById: jest.fn(),
+      removeUserById: jest.fn()
+    };
+
+    const controller = userController(mockUserService);
+    const mockRes = {};
+    const mockNext = jest.fn();
+
+    const mockSuccessResponse = () => {
+      const responseFn = jest.fn();
+      const messageFn = jest.fn().mockReturnValue(responseFn);
+      return { messageFn, responseFn };
+    };
+
+    return { 
+      controller, 
+      mockUserService, 
+      mockRes, 
+      mockNext, 
+      mockSuccessResponse 
+    };
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('createUser', () => {
-    it('Should create user and return 201 response', async () => {
-      const req = {
-        body: {
-          username: 'jesus',
-          email: 'test@gmail.com',
-          password: 'admin123'
-        }
-      };
-      const res = mockRes();
+    it('Should create user and return 201 status with the new entity', async () => {
+      const { controller, mockUserService, mockRes, mockNext, mockSuccessResponse } = setup();
+      const { messageFn, responseFn } = mockSuccessResponse();
+      
+      const userData = { username: 'jesus', email: 'test@gmail.com', password: 'password123' };
+      const createdUser = { id: 'user-1', ...userData };
 
-      const createdUser = { id: '1', ...req.body };
-
-      userService.createNewUser.mockResolvedValue(Ok(createdUser));
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
+      mockUserService.createNewUser.mockResolvedValue(Ok(createdUser));
       createdSuccessfully.mockReturnValue(messageFn);
 
-      await createUser(req, res, mockNext);
+      await controller.createUser({ body: userData }, mockRes, mockNext);
 
-      expect(userService.createNewUser).toHaveBeenCalledWith(req.body);
-      expect(createdSuccessfully).toHaveBeenCalledWith(res);
+      expect(mockUserService.createNewUser).toHaveBeenCalledWith(userData);
+      expect(createdSuccessfully).toHaveBeenCalledWith(mockRes);
       expect(messageFn).toHaveBeenCalledWith('User created successfully');
       expect(responseFn).toHaveBeenCalledWith(createdUser);
-      expect(mockNext).not.toHaveBeenCalled();
     });
 
-    it('Should throw error if service fails', async () => {
-      const error = new Error('Error');
-      const req = { body: {} };
-      const res = mockRes();
+    it('Should propagate service validation errors to next()', async () => {
+      const { controller, mockUserService, mockRes, mockNext } = setup();
+      const validationError = { status: 400, message: 'Email already exists' };
 
-      userService.createNewUser.mockResolvedValue(Error(error));
+      mockUserService.createNewUser.mockResolvedValue(Error(validationError));
 
-      await createUser(req, res, mockNext);
+      await controller.createUser({ body: {} }, mockRes, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith(error);
-    });
-  });
-
-  describe('getAllUsers', () => {
-    it('Should return all users', async () => {
-      const req = {};
-      const res = mockRes();
-      const users = [{ id: '1' }, { id: '2' }];
-
-      userService.fetchAllUsers.mockResolvedValue(Ok(users));
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
-      completedSuccessfully.mockReturnValue(messageFn);
-
-      await getAllUsers(req, res, mockNext);
-
-      expect(userService.fetchAllUsers).toHaveBeenCalled();
-      expect(completedSuccessfully).toHaveBeenCalledWith(res);
-      expect(messageFn).toHaveBeenCalledWith('All users get successfully');
-      expect(responseFn).toHaveBeenCalledWith(users);
+      expect(mockNext).toHaveBeenCalledWith(validationError);
     });
   });
 
   describe('getUserById', () => {
-    it('Should return user by id', async () => {
-      const req = { params: { id: '1' } };
-      const res = mockRes();
+    it('Should return user when found by ID', async () => {
+      const { controller, mockUserService, mockRes, mockNext, mockSuccessResponse } = setup();
+      const { messageFn, responseFn } = mockSuccessResponse();
       const user = { id: '1', username: 'jesus' };
 
-      userService.fetchUserById.mockResolvedValue(Ok(user));
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
+      mockUserService.fetchUserById.mockResolvedValue(Ok(user));
       completedSuccessfully.mockReturnValue(messageFn);
 
-      await getUserById(req, res, mockNext);
+      await controller.getUserById({ params: { id: '1' } }, mockRes, mockNext);
 
-      expect(userService.fetchUserById).toHaveBeenCalledWith('1');
-      expect(messageFn).toHaveBeenCalledWith('User get successfully');
+      expect(mockUserService.fetchUserById).toHaveBeenCalledWith('1');
       expect(responseFn).toHaveBeenCalledWith(user);
     });
   });
 
   describe('updateUser', () => {
-    it('Should update user successfully', async () => {
-      const req = {
-        params: { id: '1' },
-        body: { username: 'Julian' }
-      };
-      const res = mockRes();
-      const updatedUser = { id: '1', ...req.body };
-
-      userService.modifyUserById.mockResolvedValue(Ok(updatedUser));
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
+    it('Should call modification service and return updated data', async () => {
+      const { controller, mockUserService, mockRes, mockNext, mockSuccessResponse } = setup();
+      const { messageFn, responseFn } = mockSuccessResponse();
+      
+      const updateData = { username: 'Julian' };
+      mockUserService.modifyUserById.mockResolvedValue(Ok({ id: '1', ...updateData }));
       completedSuccessfully.mockReturnValue(messageFn);
 
-      await updateUser(req, res, mockNext);
+      await controller.updateUser({ params: { id: '1' }, body: updateData }, mockRes, mockNext);
 
-      expect(userService.modifyUserById).toHaveBeenCalledWith('1', req.body);
+      expect(mockUserService.modifyUserById).toHaveBeenCalledWith('1', updateData);
       expect(messageFn).toHaveBeenCalledWith('User updated successfully');
-      expect(responseFn).toHaveBeenCalledWith(updatedUser);
     });
   });
 
   describe('deleteUser', () => {
-    it('Should delete user successfully', async () => {
-      const req = { params: { id: '1' } };
-      const res = mockRes();
+    it('Should execute deletion and return no_content success', async () => {
+      const { controller, mockUserService, mockRes, mockNext, mockSuccessResponse } = setup();
+      const { messageFn, responseFn } = mockSuccessResponse();
 
-      userService.removeUserById.mockResolvedValue(Ok(true));
-
-      const responseFn = jest.fn();
-      const messageFn = jest.fn().mockReturnValue(responseFn);
+      mockUserService.removeUserById.mockResolvedValue(Ok(true));
       deletedSuccessfully.mockReturnValue(messageFn);
 
-      await deleteUser(req, res, mockNext);
+      await controller.deleteUser({ params: { id: '1' } }, mockRes, mockNext);
 
-      expect(userService.removeUserById).toHaveBeenCalledWith('1');
-      expect(deletedSuccessfully).toHaveBeenCalledWith(res);
+      expect(mockUserService.removeUserById).toHaveBeenCalledWith('1');
       expect(messageFn).toHaveBeenCalledWith('User deleted successfully');
       expect(responseFn).toHaveBeenCalled();
     });

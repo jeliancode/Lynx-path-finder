@@ -3,7 +3,7 @@ import {
   Error,
   ResultMonad,
   fromPromise
-} from '../funtional/monad.js';
+} from '../shared/funtional/monad.js';
 
 describe('Result Monad', () => {
 

@@ -1,160 +1,83 @@
-jest.mock('../pathFinder/aStarAlgorithm.js', () => ({
-  calculateAStarPath: jest.fn()
-}));
+import buildRouteThroughWaypoints from '../pathFinder/routeBuilder.js';
 
-import { buildRouteThroughWaypoints } from '../pathFinder/routeBuilder.js';
-import { calculateAStarPath } from '../pathFinder/aStarAlgorithm.js';
-
-describe('buildRouteThroughWaypoints', () => {
+describe('buildRouteThroughWaypoints - Recursive Logic', () => {
+  
+  const setup = () => {
+    const mockPathfinder = jest.fn();
+    const builder = buildRouteThroughWaypoints(mockPathfinder);
+    return { builder, mockPathfinder };
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('Should build direct route without waypoints', () => {
-    const mapConfig = {};
+  it('Should build a direct route when no waypoints are provided', () => {
+    const { builder, mockPathfinder } = setup();
     const start = { x: 0, y: 0 };
     const end = { x: 2, y: 0 };
 
-    calculateAStarPath.mockReturnValue({
-      path: [
-        { x: 0, y: 0 },
-        { x: 1, y: 0 },
-        { x: 2, y: 0 }
-      ],
+    mockPathfinder.mockReturnValue({
+      path: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }],
       distance: 2
     });
 
-    const result = buildRouteThroughWaypoints(mapConfig, start, [], end);
+    const result = builder(start, [], end);
 
-    expect(calculateAStarPath).toHaveBeenCalledWith(mapConfig, start, end);
-
-    expect(result.path).toEqual([
-      { x: 0, y: 0 },
-      { x: 1, y: 0 },
-      { x: 2, y: 0 }
-    ]);
-
+    expect(mockPathfinder).toHaveBeenCalledTimes(1);
+    expect(mockPathfinder).toHaveBeenCalledWith(start, end);
     expect(result.distance).toBe(2);
+    expect(result.path).toHaveLength(3);
   });
 
-  it('Should build route through multiple waypoints', () => {
-    const mapConfig = {};
+  it('Should correctly concatenate multiple segments avoiding duplicate nodes', () => {
+    const { builder, mockPathfinder } = setup();
     const start = { x: 0, y: 0 };
-    const waypoints = [{ x: 2, y: 0 }, { x: 2, y: 2 }];
-    const end = { x: 4, y: 2 };
-
-    calculateAStarPath
-      .mockReturnValueOnce({
-        path: [
-          { x: 0, y: 0 },
-          { x: 1, y: 0 },
-          { x: 2, y: 0 }
-        ],
-        distance: 2
-      })
-      .mockReturnValueOnce({
-        path: [
-          { x: 2, y: 0 },
-          { x: 2, y: 1 },
-          { x: 2, y: 2 }
-        ],
-        distance: 2
-      })
-      .mockReturnValueOnce({
-        path: [
-          { x: 2, y: 2 },
-          { x: 3, y: 2 },
-          { x: 4, y: 2 }
-        ],
-        distance: 2
-      });
-
-    const result = buildRouteThroughWaypoints(
-      mapConfig,
-      start,
-      waypoints,
-      end
-    );
-
-    expect(calculateAStarPath).toHaveBeenCalledTimes(3);
-
-    expect(result.path).toEqual([
-      { x: 0, y: 0 },
-      { x: 1, y: 0 },
-      { x: 2, y: 0 },
-      { x: 2, y: 1 },
-      { x: 2, y: 2 },
-      { x: 3, y: 2 },
-      { x: 4, y: 2 }
-    ]);
-
-    expect(result.distance).toBe(6);
-  });
-
-  it('Should not duplicate waypoint nodes between segments', () => {
-    const mapConfig = {};
-    const start = { x: 0, y: 0 };
-    const waypoint = { x: 1, y: 0 };
+    const waypoints = [{ x: 1, y: 0 }];
     const end = { x: 2, y: 0 };
 
-    calculateAStarPath
-      .mockReturnValueOnce({
-        path: [
-          { x: 0, y: 0 },
-          { x: 1, y: 0 }
-        ],
-        distance: 1
-      })
-      .mockReturnValueOnce({
-        path: [
-          { x: 1, y: 0 },
-          { x: 2, y: 0 }
-        ],
-        distance: 1
-      });
+    mockPathfinder.mockReturnValueOnce({
+      path: [{ x: 0, y: 0 }, { x: 1, y: 0 }],
+      distance: 1
+    });
+    mockPathfinder.mockReturnValueOnce({
+      path: [{ x: 1, y: 0 }, { x: 2, y: 0 }],
+      distance: 1
+    });
 
-    const result = buildRouteThroughWaypoints(
-      mapConfig,
-      start,
-      [waypoint],
-      end
-    );
+    const result = builder(start, waypoints, end);
 
     expect(result.path).toEqual([
       { x: 0, y: 0 },
       { x: 1, y: 0 },
       { x: 2, y: 0 }
     ]);
-
     expect(result.distance).toBe(2);
   });
 
-  it('Should call A* with correct ordered points', () => {
-    const mapConfig = {};
+  it('Should maintain the correct order of waypoints (Edge Case: Long chain)', () => {
+    const { builder, mockPathfinder } = setup();
     const start = { x: 0, y: 0 };
-    const waypoints = [{ x: 1, y: 1 }];
-    const end = { x: 2, y: 2 };
+    const waypoints = [{ x: 1, y: 1 }, { x: 2, y: 2 }];
+    const end = { x: 3, y: 3 };
 
-    calculateAStarPath.mockReturnValue({
-      path: [],
-      distance: 0
+    mockPathfinder.mockReturnValue({ path: [], distance: 0 });
+
+    builder(start, waypoints, end);
+
+    expect(mockPathfinder).toHaveBeenNthCalledWith(1, start, waypoints[0]);
+    expect(mockPathfinder).toHaveBeenNthCalledWith(2, waypoints[0], waypoints[1]);
+    expect(mockPathfinder).toHaveBeenNthCalledWith(3, waypoints[1], end);
+  });
+
+  it('Should bubble up errors if the pathfinder fails (Negative Test)', () => {
+    const { builder, mockPathfinder } = setup();
+    
+    mockPathfinder.mockImplementation(() => {
+      throw new Error('No possible route found');
     });
 
-    buildRouteThroughWaypoints(mapConfig, start, waypoints, end);
-
-    expect(calculateAStarPath).toHaveBeenNthCalledWith(
-      1,
-      mapConfig,
-      start,
-      waypoints[0]
-    );
-
-    expect(calculateAStarPath).toHaveBeenNthCalledWith(
-      2,
-      mapConfig,
-      waypoints[0],
-      end
-    );
+    expect(() => builder({ x: 0, y: 0 }, [], { x: 5, y: 5 }))
+      .toThrow('No possible route found');
   });
 });

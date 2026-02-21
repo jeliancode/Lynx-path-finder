@@ -1,6 +1,6 @@
 import { validateWaypointsReachable } from '../validator/reachableWaypointValidator.js';
-import { unprocessableEntityError } from '../error/httpError.js';
-import { Ok, Error as ResultError } from '../funtional/monad.js';
+import { unprocessableEntityError } from '../shared/error/httpError.js';
+import { Ok, Error } from '../shared/funtional/monad.js';
 
 
 describe('validateWaypointsReachable', () => {

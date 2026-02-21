@@ -1,6 +1,6 @@
 import { validateMapExists } from '../validateMapExists.js';
 import * as mapRepository from '../../infrastructure/repositories/mapRepository.js';
-import { unprocessableEntityError, notFoundError } from '../../utils/error/httpError.js';
+import { unprocessableEntityError, notFoundError } from '../../domain/shared/error/httpError.js';
 
 jest.mock('../../infrastructure/repositories/mapRepository.js');
 
