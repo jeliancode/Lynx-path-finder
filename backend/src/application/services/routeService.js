@@ -7,6 +7,10 @@ import { validateMapConfiguration } from '../../domain/validator/mapConfigValida
 import { validateStartEndPoints } from '../../domain/validator/routePointsValidator.js';
 import { notFoundError } from '../../domain/shared/error/httpError.js';
 import { Ok, Error, fromPromise, ResultMonad } from '../../domain/shared/funtional/monad.js';
+import { validatePossibleRoute } from '../../domain/validator/possibleRouteValidator.js';
+import { analyzeExecution } from '../../infrastructure/performance/performanceAnalyzer.js';
+import { validatePerformanceMetrics } from '../../domain/validator/performanceValidator.js';
+import { hasValidPath } from '../../domain/pathFinder/bfsAlgorithm.js';
 import pipe from '../../domain/shared/funtional/pipe.js';
 
 const ensureFound = (errorMsg) => (data) => 
@@ -46,6 +50,21 @@ export const routeService = ({ routeRepository }) => ({
       (completeData) => fromPromise(() => routeRepository.createRoute(completeData))
     )();
   },
+
+  getPossibleRoute: (routeData, map) =>
+    pipe(
+      () => validateMapConfiguration(map),
+      () => {
+        const start = getPoint(routeData, 'start');
+        const end = getPoint(routeData, 'end');
+        return validateStartEndPoints(map.obstacles)(start)(end);
+      },
+      () => {
+        const start = getPoint(routeData, 'start');
+        const end = getPoint(routeData, 'end');
+        return validatePossibleRoute(map)(start)(end);
+      }
+    )(),
 
   modifyRouteById: (id, updateData, map) => {
     const routeBuilder = createPathfinder(map);
@@ -95,4 +114,21 @@ export const routeService = ({ routeRepository }) => ({
   removeRouteById: (id) =>
     fromPromise(() => routeRepository.deleteRouteById(id))
       .then(result => ResultMonad.chain(ensureFound('Route to delete not found'))(result)),
+
+  analyzeRoutePerformance: async (routeData, map) => {
+    const start = getPoint(routeData, 'start');
+    const end = getPoint(routeData, 'end');
+
+    const analysis = await analyzeExecution(() =>
+      hasValidPath({
+        width: map.width,
+        height: map.height,
+        startPoint: start,
+        endPoint: end,
+        obstacles: map.obstacles
+      })
+    );
+
+    return validatePerformanceMetrics(analysis.metrics);
+  },
 });

@@ -6,11 +6,13 @@ import mapRoutes from './presentation/routes/mapRoutes.js';
 import obstacleRoutes from './presentation/routes/obstacleRoutes.js';
 import { validateMapExists } from './middlewares/validateMapExists.js';
 import { errorHandler } from './middlewares/errorHandler.js';
+import { createMemoizationMiddleware } from './middlewares/memoizationMiddleware.js';
+import { cacheConfig } from './config/cacheConfig.js';
 
 const app = express();
 
 app.use(express.json());
-
+app.use(createMemoizationMiddleware(cacheConfig));
 app
     .use('/api/users', userRoutes)
     .use('/api/maps', mapRoutes)
