@@ -1,15 +1,19 @@
+import { ResultMonad, Ok, Error } from '../domain/shared/funtional/monad.js';
+import { badRequestError } from '../domain/shared/error/httpError.js';
 import { isValidUUID } from '../domain/validator/uuidValidator.js';
 
-export const validateUUID = (field = 'id',) => 
-  (req, res, next) => {
+export const validateUUID = (field = 'id') => (req, res, next) => {
+  const value = req.params[field];
 
-    const { [field]: value } = req.params;
+  const checkUUID = (id) => 
+    (id && isValidUUID(id))
+      ? Ok(id)
+      : Error(badRequestError(`Invalid ID format: ${field}`));
 
-    if (!value || !isValidUUID(value)) {
-      return res.status(400).json({
-        error: 'Formato inválido del ID.'
-      });
-    }
+  const validationResult = checkUUID(value);
 
-    next();
+  return ResultMonad.fold(
+    (error) => next(error),
+    () => next()
+  )(validationResult);
 };

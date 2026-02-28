@@ -1,6 +1,6 @@
 import pipe from '../domain/shared/funtional/pipe.js';
 import { Ok, Error } from '../domain/shared/funtional/monad.js';
-import { createLRUCache } from '../infrastructure/cache/LRUcache.js';
+import { createLRUCache} from '../infrastructure/cache/LRUcache.js'
 
 export const createMemoizationMiddleware = (config = {}) => {
   const cache = createLRUCache(config);
