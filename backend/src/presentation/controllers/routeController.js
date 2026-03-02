@@ -3,10 +3,10 @@ import { createdSuccessfully, completedSuccessfully, deletedSuccessfully } from 
 
 export const routeController = (routeService) => ({
     createRoute: async (req, res, next) => {
-        const { startX, startY, endX, endY} = req.body;
+        const { startX, startY, endX, endY, stopIds } = req.body;
         const { mapId } = req.params;
         const map = req.map;
-        const creationResult = await routeService.createNewRoute({ mapId, startX, startY, endX, endY }, map);
+        const creationResult = await routeService.createNewRoute({ mapId, startX, startY, endX, endY, stopIds  }, map);
 
         ResultMonad.fold(
             (error) => next(error),
@@ -26,7 +26,7 @@ export const routeController = (routeService) => ({
         ResultMonad.fold(
             (error) => next(error),
             () => completedSuccessfully(res)(
-                'Se encontró al menos una ruta válida desde el punto de inicio hasta el destino.'
+                'Almost one route was found.'
             )()
         )(validationResult);
     },

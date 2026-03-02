@@ -27,27 +27,68 @@ const getPoint = (data, prefix = 'start', fallback = {}) => ({
   y: data[`${prefix}Y`] ?? fallback[`${prefix}Y`]
 });
 
-export const routeService = ({ routeRepository }) => ({
+export const routeService = ({ routeRepository }, { waypointRepository }) => ({
 
   createNewRoute: (routeData, map) => {
     const routeBuilder = createPathfinder(map);
 
     return pipe(
       () => validateMapConfiguration(map),
+
       () => {
         const start = getPoint(routeData, 'start');
         const end = getPoint(routeData, 'end');
         return validateStartEndPoints(map.obstacles)(start)(end);
       },
-      () => {
+
+      () =>
+        fromPromise(() =>
+          waypointRepository.findByIds(routeData.stopIds || [])
+        ),
+
+      (stops) => {
+        if (!stops || stops.length !== (routeData.stopIds || []).length) {
+          return ResultMonad.Error(new Error('Some stops were not found'));
+        }
+        return Ok(stops);
+      },
+
+      (stops) => {
+        const invalidStop = stops.find(stop => stop.mapId !== map.id);
+        if (invalidStop) {
+          return ResultMonad.Error(
+            new Error('One or more stops do not belong to this map')
+          );
+        }
+        return Ok(stops);
+      },
+
+      (stops) => {
+        const stopMap = new Map(stops.map(s => [s.id, s]));
+
+        const orderedStops = routeData.stopIds.map(id => stopMap.get(id));
+
+        const waypoints = orderedStops.map(stop => ({
+          x: stop.x,
+          y: stop.y
+        }));
+
         const start = getPoint(routeData, 'start');
         const end = getPoint(routeData, 'end');
-        const waypoints = map.waypoints.map(wp => ({ x: wp.x, y: wp.y }));
-        
+
         const { path, distance } = routeBuilder(start, waypoints, end);
-        return Ok({ ...routeData, distance, path });
+
+        return Ok({
+          ...routeData,
+          distance,
+          path
+        });
       },
-      (completeData) => fromPromise(() => routeRepository.createRoute(completeData))
+
+      (completeData) =>
+        fromPromise(() =>
+          routeRepository.createRoute(completeData)
+        )
     )();
   },
 

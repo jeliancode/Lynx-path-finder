@@ -13,7 +13,7 @@ import { waypointService } from '../application/services/waypointService.js';
 export const container = {
   userService: userService({ userRepository }),
   mapService: mapService({ mapRepository }),
-  routeService: routeService({ routeRepository }),
+  routeService: routeService({ routeRepository }, { waypointRepository }),
   obstacleService: obstacleService({ obstacleRepository }),
   waypointService: waypointService({ waypointRepository })
 };

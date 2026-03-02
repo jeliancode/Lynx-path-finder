@@ -27,6 +27,13 @@ export const getAllWaypoints = async () =>
 export const getWaypointById = async (id) => 
   await findUniqueRecord(entity, id);
 
+export const findByIds = async (ids) =>
+  await findManyRecords(entity, {
+    where: {
+      id: { in: ids }
+    }
+  });
+
 export const updateWaypointById = async (id, updateData) => 
   await updateRecord(entity, id, updateData);
 
