@@ -4,6 +4,7 @@ import waypointRoutes from './presentation/routes/waypointRoutes.js';
 import routeRoutes from './presentation/routes/routeRoutes.js';
 import mapRoutes from './presentation/routes/mapRoutes.js';
 import obstacleRoutes from './presentation/routes/obstacleRoutes.js';
+import performanceRoutes from './presentation/routes/performanceRoutes.js'
 import { validateMapExists } from './middlewares/validateMapExists.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { createMemoizationMiddleware } from './middlewares/memoizationMiddleware.js';
@@ -18,7 +19,8 @@ app
     .use('/api/maps', mapRoutes)
     .use('/api/waypoints/:mapId', validateMapExists(), waypointRoutes)
     .use('/api/routes/:mapId', validateMapExists(), routeRoutes)
-    .use('/api/obstacles/:mapId', validateMapExists(), obstacleRoutes);
+    .use('/api/obstacles/:mapId', validateMapExists(), obstacleRoutes)
+    .use('/api/performance/:mapId', validateMapExists(), performanceRoutes);
 
 app.use(errorHandler);
 

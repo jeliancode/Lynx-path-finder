@@ -5,6 +5,7 @@ import {
   deleteRecord 
 } from '../../domain/repositories/baseRepository.js';
 import { createManyRecords, findManyRecords } from '../../domain/repositories/manyQueryRepository.js';
+import prisma from '../prisma.js';
 
 const entity = 'obstacle';
 
@@ -27,6 +28,18 @@ export const getAllObstacles = async () =>
 
 export const getObstacleById = async (id) => 
   await findUniqueRecord(entity, id);
+
+export const findByMapId =  async (mapId) => {
+  return prisma.obstacle.findMany({
+    where: { mapId },
+    select: {
+      x: true,
+      y: true,
+      width: true,
+      height: true
+    }
+  })
+};
 
 export const updateObstacleById = async (id, updateData) => 
   await updateRecord(entity, id, updateData);

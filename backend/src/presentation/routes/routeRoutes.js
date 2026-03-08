@@ -8,12 +8,10 @@ const controller = routeController(container.routeService);
 
 router
     .post('/', validateUUID('mapId'), controller.createRoute)
-    .post('/possible', validateUUID('mapId'), controller.getPossibleRoute)
-    .get('/validate/:id', validateUUID('mapId'), validateUUID('id'), controller.validateRouteWaypoints)
+    .get('/validate/:id', validateUUID('mapId'), validateUUID('id'), controller.validateRoute)
     .get('/', validateUUID('mapId'), controller.getAllRoutes)
     .get('/:id', validateUUID('mapId'), validateUUID('id'), controller.getRouteById)
     .put('/:id', validateUUID('mapId'), validateUUID('id'), controller.updateRoute)
-    .delete('/:id', validateUUID('mapId'), validateUUID('id'), controller.deleteRoute)
-    .post('/analyze/:id', validateUUID('mapId'), validateUUID('id'), controller.analyzeRoutePerformance);
+    .delete('/:id', validateUUID('mapId'), validateUUID('id'), controller.deleteRoute);
     
 export default router;

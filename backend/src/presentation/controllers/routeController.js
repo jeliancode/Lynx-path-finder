@@ -14,27 +14,10 @@ export const routeController = (routeService) => ({
         )(creationResult);
     },
 
-    getPossibleRoute: async (req, res, next) => {
-        const { startX, startY, endX, endY } = req.body;
-        const map = req.map;
-
-        const validationResult = await routeService.getPossibleRoute(
-            { startX, startY, endX, endY },
-            map
-        );
-
-        ResultMonad.fold(
-            (error) => next(error),
-            () => completedSuccessfully(res)(
-                'Almost one route was found.'
-            )()
-        )(validationResult);
-    },
-
-    validateRouteWaypoints: async (req, res, next) => {
+    validateRoute: async (req, res, next) => {
         const { id } = req.params;
         const map = req.map;
-        const validationResult = await routeService.validateRouteWaypoints(id, map);
+        const validationResult = await routeService.validateRoute(id, map);
 
         ResultMonad.fold(
             (error) => next(error),
@@ -81,22 +64,5 @@ export const routeController = (routeService) => ({
             (error) => next(error),
             () => deletedSuccessfully(res)('Route deleted successfully')()
         )(deleteResult);
-    },
-
-    analyzeRoutePerformance: async (req, res, next) => {
-        const { startX, startY, endX, endY } = req.body;
-        const map = req.map;
-
-        const result = await routeService.analyzeRoutePerformance(
-            { startX, startY, endX, endY },
-            map
-        );
-
-        ResultMonad.fold(
-            (error) => next(error),
-            () => completedSuccessfully(res)(
-                'Análisis de rendimiento completado sin fugas de memoria ni cuellos de botella detectados.'
-            )()
-        )(result);
     },
 });

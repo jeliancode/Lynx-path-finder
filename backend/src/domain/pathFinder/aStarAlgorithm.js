@@ -11,9 +11,11 @@ const reconstructPath = (node) => {
 };
 
 export const aStarPathfinder = (heuristic) => (getNeighbors) => (start, end) => {
+
   const closedSet = new Set();
   const openNodes = [];
   const openNodesByKey = new Map();
+  const visitedNodes = new Set();
 
   const startNode = {
     ...start,
@@ -26,19 +28,25 @@ export const aStarPathfinder = (heuristic) => (getNeighbors) => (start, end) => 
   openNodesByKey.set(`${start.x},${start.y}`, startNode);
 
   while (openNodes.length > 0) {
+
     openNodes.sort((a, b) => a.f - b.f);
     const currentNode = openNodes.shift();
     const currentKey = `${currentNode.x},${currentNode.y}`;
-    
     openNodesByKey.delete(currentKey);
+    visitedNodes.add(currentKey);
 
     if (currentNode.x === end.x && currentNode.y === end.y) {
-      return { path: reconstructPath(currentNode), distance: currentNode.g };
+      return {
+        path: reconstructPath(currentNode),
+        distance: currentNode.g,
+        visitedNodes
+      };
     }
 
     closedSet.add(currentKey);
 
     for (const neighbor of getNeighbors(currentNode)) {
+
       const neighborKey = `${neighbor.x},${neighbor.y}`;
       if (closedSet.has(neighborKey)) continue;
 
@@ -46,6 +54,7 @@ export const aStarPathfinder = (heuristic) => (getNeighbors) => (start, end) => 
       const existing = openNodesByKey.get(neighborKey);
 
       if (!existing || gScore < existing.g) {
+
         const node = {
           ...neighbor,
           g: gScore,
@@ -58,6 +67,7 @@ export const aStarPathfinder = (heuristic) => (getNeighbors) => (start, end) => 
         } else {
           Object.assign(existing, node);
         }
+
         openNodesByKey.set(neighborKey, existing || node);
       }
     }

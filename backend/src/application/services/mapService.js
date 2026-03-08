@@ -1,5 +1,4 @@
 import validateMapData from '../../domain/validator/mapDataValidator.js';
-import { validateNoCycles } from '../../domain/validator/cycleDetector.js'
 import { notFoundError } from '../../domain/shared/error/httpError.js';
 import { Ok, Error, fromPromise, ResultMonad } from '../../domain/shared/funtional/monad.js';
 import pipe from '../../domain/shared/funtional/pipe.js';
@@ -11,7 +10,6 @@ export const mapService = ({ mapRepository }) => ({
   createNewMap: (mapData) =>
     pipe(
       validateMapData,
-      validateNoCycles,
       (validData) => fromPromise(() => mapRepository.createMap(validData))
     )(mapData),
 
