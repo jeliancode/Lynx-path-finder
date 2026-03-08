@@ -1,8 +1,21 @@
-export const errorHandler = (err, req, res, next) => {
-    const error = {
-        code: err.status || 500,
-        message: err.message || 'Internal server error'
-    }
+import { logger } from '../infrastructure/logging/logger.js';
 
-    res.status(error.code).json({ message: error.message });
-}
+export const errorHandler = (err, req, res, next) => {
+    const statusCode = err.status || 500;
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    logger.error({
+        message: err.message,
+        status: statusCode,
+        method: req.method,
+        url: req.originalUrl,
+        body: req.body,
+        stack: err.stack
+    });
+
+    res.status(statusCode).json({
+        message: isProduction && statusCode === 500
+            ? 'Internal server error'
+            : err.message
+    });
+};

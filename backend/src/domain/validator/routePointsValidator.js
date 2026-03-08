@@ -7,27 +7,27 @@ const toKey = ({ x, y }) => `${x},${y}`;
 const obstacleSetFrom = (obstacles) =>
   new Set(obstacles.map(toKey));
 
-const isBlocked = (obstacleSet) => (point) =>
-  obstacleSet.has(toKey(point));
-
-const validateNotBlocked = (obstacleSet, label) =>
+const validatePointNotBlocked = (obstacleSet) =>
   validateWith(
-    (point) => !isBlocked(obstacleSet)(point),
-    () => unprocessableEntityError(`${label} point is blocked by an obstacle`)
+    (point) => !obstacleSet.has(toKey(point)),
+    (point) =>
+      unprocessableEntityError(
+        `Point (${point.x}, ${point.y}) is blocked by an obstacle`
+      )
   );
 
+export const validatePointsNotBlocked =
+  (expandedObstacles) =>
+  (points) => {
 
-export const validateStartEndPoints =
-  obstacles =>
-  start =>
-  end => {
-    const obstacleSet = obstacleSetFrom(obstacles);
+    const obstacleSet = obstacleSetFrom(expandedObstacles);
+    const pointsArray = Array.isArray(points) ? points : [points];
 
-    return ResultMonad.chain(() =>
-      ResultMonad.map(() => ({ start, end }))(
-        validateNotBlocked(obstacleSet, 'Destiny')(end)
-      )
-    )(
-      validateNotBlocked(obstacleSet, 'Start')(start)
+    return pointsArray.reduce(
+      (acc, point) =>
+        ResultMonad.chain(() =>
+          validatePointNotBlocked(obstacleSet)(point)
+        )(acc),
+      Ok(pointsArray)
     );
   };

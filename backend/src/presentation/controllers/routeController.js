@@ -3,10 +3,10 @@ import { createdSuccessfully, completedSuccessfully, deletedSuccessfully } from 
 
 export const routeController = (routeService) => ({
     createRoute: async (req, res, next) => {
-        const { startX, startY, endX, endY} = req.body;
+        const { startX, startY, endX, endY, stopIds } = req.body;
         const { mapId } = req.params;
         const map = req.map;
-        const creationResult = await routeService.createNewRoute({ mapId, startX, startY, endX, endY }, map);
+        const creationResult = await routeService.createNewRoute({ mapId, startX, startY, endX, endY, stopIds  }, map);
 
         ResultMonad.fold(
             (error) => next(error),
@@ -14,10 +14,10 @@ export const routeController = (routeService) => ({
         )(creationResult);
     },
 
-    validateRouteWaypoints: async (req, res, next) => {
+    validateRoute: async (req, res, next) => {
         const { id } = req.params;
         const map = req.map;
-        const validationResult = await routeService.validateRouteWaypoints(id, map);
+        const validationResult = await routeService.validateRoute(id, map);
 
         ResultMonad.fold(
             (error) => next(error),
